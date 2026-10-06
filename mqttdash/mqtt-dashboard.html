@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class MQTT dashboard</title>
+<style>
+  :root {
+    --bg: #f2f5f7;
+    --panel: #ffffff;
+    --ink: #14212b;
+    --muted: #64768a;
+    --line: #d7dfe5;
+    --accent: #0f766e;
+    --stale: #b45309;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1a22;
+      --panel: #16242f;
+      --ink: #e6edf2;
+      --muted: #8fa3b3;
+      --line: #284050;
+      --accent: #4fd1c5;
+      --stale: #f6ad55;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    line-height: 1.4;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 32px;
+    align-items: end;
+    justify-content: space-between;
+    padding: 24px 28px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  h1 { margin: 0; font-size: 1.5rem; font-weight: 600; }
+  #status { color: var(--muted); font-size: .9rem; margin-top: 4px; }
+  #status.ok { color: var(--accent); }
+  form, .tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+  label { display: grid; gap: 2px; font-size: .8rem; color: var(--muted); }
+  input, select {
+    font: inherit;
+    padding: 7px 9px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--panel);
+    color: var(--ink);
+    min-width: 9rem;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button {
+    font: inherit;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
+  button.quiet {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  @media (prefers-color-scheme: dark) { button:not(.quiet) { color: #07211e; } }
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: end;
+    justify-content: space-between;
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--line);
+  }
+  #saved { color: var(--muted); font-size: .8rem; }
+  main { padding: 24px 28px 48px; }
+  .empty { color: var(--muted); max-width: 38rem; }
+  .group { margin-bottom: 28px; }
+  .group h2 { margin: 0 0 10px; font-size: 1rem; font-weight: 600; color: var(--muted); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  .tile {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 12px 14px;
+  }
+  .tile.stale { border-left-color: var(--stale); }
+  .topic { font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+  .value {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 4px 0 2px;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+  }
+  .value.text { font-size: 1.2rem; }
+  .age { font-size: .8rem; color: var(--muted); }
+  .tile.stale .age { color: var(--stale); }
+  svg.chart { display: block; width: 100%; height: auto; margin-top: 8px; }
+  svg.chart text { fill: var(--muted); font-size: 9px; font-family: inherit; }
+  svg.chart .grid { stroke: var(--line); stroke-width: 1; }
+  svg.chart polyline { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linejoin: round; }
+  svg.chart circle { fill: var(--accent); }
+  .nodata { font-size: .8rem; color: var(--muted); margin-top: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Class MQTT dashboard</h1>
+    <div id="status" role="status">Not connected</div>
+  </div>
+  <form id="login">
+    <label>Host
+      <input id="host" value="defence4sme.cloud.shiftr.io" required>
+    </label>
+    <label>Username
+      <input id="user" autocomplete="off" required>
+    </label>
+    <label>Token secret
+      <input id="pass" type="password" autocomplete="off" required>
+    </label>
+    <button type="submit">Connect</button>
+  </form>
+</header>
+
+<div class="bar">
+  <div class="tools">
+    <label>Time range
+      <select id="range">
+        <option value="900000">Last 15 minutes</option>
+        <option value="3600000" selected>Last hour</option>
+        <option value="21600000">Last 6 hours</option>
+        <option value="86400000">Last 24 hours</option>
+        <option value="0">Everything recorded</option>
+      </select>
+    </label>
+    <button type="button" class="quiet" id="csv">Download CSV</button>
+    <button type="button" class="quiet" id="clear">Clear history</button>
+  </div>
+  <div id="saved">History is recorded while this page is open.</div>
+</div>
+
+<main id="main">
+  <p class="empty">Enter your Shiftr details and press Connect. Every topic that receives a message appears as a tile with its latest value and a graph over time. The token is not saved; the recorded values are kept in this browser.</p>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>
+  const STALE_AFTER_S = 900;     // tiles turn amber after 15 minutes without an update
+  const MAX_POINTS = 4000;       // per topic; older points are thinned out beyond this
+  const STORE_KEY = 'class-mqtt-dashboard-history';
+
+  const topics = {};             // topic -> { value, time, series: [[ms, number], ...] }
+  const statusEl = document.getElementById('status');
+  const mainEl = document.getElementById('main');
+  const savedEl = document.getElementById('saved');
+  const rangeEl = document.getElementById('range');
+  let client = null;
+  let dirty = false;
+
+  // ---- storage (kept in this browser; fails quietly if the browser blocks it) ----
+  function loadHistory() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      for (const name of Object.keys(saved)) {
+        const s = saved[name];
+        topics[name] = { value: s.value, time: s.time, series: s.series || [] };
+      }
+      savedEl.textContent = 'Loaded earlier history from this browser.';
+      render();
+    } catch (e) { /* ignore */ }
+  }
+
+  function saveHistory() {
+    if (!dirty) return;
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(topics));
+      dirty = false;
+      savedEl.textContent = 'History saved in this browser at ' + new Date().toLocaleTimeString();
+    } catch (e) {
+      savedEl.textContent = 'Could not save history (browser storage blocked or full).';
+    }
+  }
+
+  function thin(series) {
+    if (series.length <= MAX_POINTS) return series;
+    const half = Math.floor(series.length / 2);
+    const older = series.slice(0, half).filter((_, i) => i % 2 === 0);
+    return older.concat(series.slice(half));
+  }
+
+  // ---- connection ----
+  function setStatus(text, ok) {
+    statusEl.textContent = text;
+    statusEl.className = ok ? 'ok' : '';
+  }
+
+  document.getElementById('login').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (client) client.end(true);
+    const host = document.getElementById('host').value.trim();
+    setStatus('Connecting...', false);
+
+    client = mqtt.connect('wss://' + host, {
+      username: document.getElementById('user').value,
+      password: document.getElementById('pass').value,
+      clientId: 'dashboard-' + Math.random().toString(16).slice(2, 8),
+      reconnectPeriod: 3000
+    });
+
+    client.on('connect', () => {
+      setStatus('Connected to ' + host, true);
+      client.subscribe('#');
+    });
+    client.on('reconnect', () => setStatus('Reconnecting...', false));
+    client.on('close', () => setStatus('Disconnected', false));
+    client.on('error', (err) => setStatus('Error: ' + err.message, false));
+
+    client.on('message', (topic, payload) => {
+      const text = payload.toString();
+      const now = Date.now();
+      const t = topics[topic] || (topics[topic] = { series: [] });
+      t.value = text;
+      t.time = now;
+      const n = parseFloat(text);
+      if (!isNaN(n) && isFinite(text)) {
+        t.series.push([now, n]);
+        t.series = thin(t.series);
+      }
+      dirty = true;
+      render();
+    });
+  });
+
+  // ---- drawing ----
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+
+  function ageText(ms) {
+    const s = Math.round((Date.now() - ms) / 1000);
+    if (s < 60) return s + ' s ago';
+    if (s < 3600) return Math.floor(s / 60) + ' min ago';
+    return Math.floor(s / 3600) + ' h ago';
+  }
+
+  function hhmm(ms) {
+    return new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function fmt(n) {
+    return Math.abs(n) >= 100 ? n.toFixed(0) : n.toFixed(1);
+  }
+
+  function chart(series) {
+    const range = Number(rangeEl.value);
+    const now = Date.now();
+    const start = range ? now - range : (series.length ? series[0][0] : now);
+    const pts = series.filter(p => p[0] >= start);
+    if (!pts.length) return '<div class="nodata">No values in this time range.</div>';
+
+    const W = 300, H = 120, L = 34, R = 8, T = 8, B = 18;
+    let min = Math.min(...pts.map(p => p[1]));
+    let max = Math.max(...pts.map(p => p[1]));
+    if (min === max) { min -= 1; max += 1; }
+    const t0 = start, t1 = range ? now : Math.max(pts[pts.length - 1][0], t0 + 1);
+    const x = ms => L + ((ms - t0) / (t1 - t0)) * (W - L - R);
+    const y = v => T + (1 - (v - min) / (max - min)) * (H - T - B);
+
+    let svg = '<svg class="chart" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Values over time">';
+    svg += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(max) + '" y2="' + y(max) + '"/>';
+    svg += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(min) + '" y2="' + y(min) + '"/>';
+    svg += '<text x="' + (L - 4) + '" y="' + (y(max) + 3) + '" text-anchor="end">' + fmt(max) + '</text>';
+    svg += '<text x="' + (L - 4) + '" y="' + (y(min) + 3) + '" text-anchor="end">' + fmt(min) + '</text>';
+    svg += '<text x="' + L + '" y="' + (H - 4) + '">' + hhmm(t0) + '</text>';
+    svg += '<text x="' + (W - R) + '" y="' + (H - 4) + '" text-anchor="end">' + hhmm(t1) + '</text>';
+    if (pts.length === 1) {
+      svg += '<circle cx="' + x(pts[0][0]).toFixed(1) + '" cy="' + y(pts[0][1]).toFixed(1) + '" r="2.5"/>';
+    } else {
+      svg += '<polyline points="' + pts.map(p => x(p[0]).toFixed(1) + ',' + y(p[1]).toFixed(1)).join(' ') + '"/>';
+    }
+    return svg + '</svg>';
+  }
+
+  function render() {
+    const names = Object.keys(topics).sort();
+    if (!names.length) return;
+
+    const groups = {};
+    for (const name of names) {
+      const parts = name.split('/');
+      const key = parts.length > 2 ? parts[1] : (parts[0] || name);
+      (groups[key] = groups[key] || []).push(name);
+    }
+
+    let html = '';
+    for (const key of Object.keys(groups).sort()) {
+      html += '<section class="group"><h2>' + esc(key) + '</h2><div class="grid">';
+      for (const name of groups[key]) {
+        const t = topics[name];
+        const numeric = t.series.length > 0 && !isNaN(parseFloat(t.value)) && isFinite(t.value);
+        const stale = (Date.now() - t.time) / 1000 > STALE_AFTER_S;
+        html += '<div class="tile' + (stale ? ' stale' : '') + '">'
+          + '<div class="topic">' + esc(name) + '</div>'
+          + '<div class="value' + (numeric ? '' : ' text') + '">' + esc(t.value) + '</div>'
+          + '<div class="age" data-time="' + t.time + '">' + ageText(t.time) + '</div>'
+          + (numeric ? chart(t.series) : '')
+          + '</div>';
+      }
+      html += '</div></section>';
+    }
+    mainEl.innerHTML = html;
+  }
+
+  // ---- buttons ----
+  rangeEl.addEventListener('change', render);
+
+  document.getElementById('csv').addEventListener('click', () => {
+    const rows = ['topic,time,value'];
+    for (const name of Object.keys(topics).sort()) {
+      for (const p of topics[name].series) {
+        rows.push([name, new Date(p[0]).toISOString(), p[1]].join(','));
+      }
+    }
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'mqtt-history.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  document.getElementById('clear').addEventListener('click', () => {
+    if (!confirm('Delete all recorded history?')) return;
+    for (const name of Object.keys(topics)) delete topics[name];
+    try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+    dirty = false;
+    mainEl.innerHTML = '<p class="empty">History cleared. New values will appear as they arrive.</p>';
+    savedEl.textContent = 'History cleared.';
+  });
+
+  // ---- housekeeping ----
+  setInterval(() => {
+    document.querySelectorAll('.age').forEach(el => {
+      const ms = Number(el.dataset.time);
+      el.textContent = ageText(ms);
+      el.parentElement.classList.toggle('stale', (Date.now() - ms) / 1000 > STALE_AFTER_S);
+    });
+  }, 1000);
+  setInterval(saveHistory, 10000);
+  window.addEventListener('beforeunload', saveHistory);
+
+  loadHistory();
+</script>
+</body>
+</html>
