@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SORA 2.5 application assistant</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root{
+  --bg:#EDF1F3; --surface:#FAFBFB; --ink:#12212B; --muted:#52646F; --line:#C5D0D6;
+  --blue:#1F5F8B; --mag:#B3135F; --ok:#1E6B45; --warn:#8A5A00; --bad:#A3201B;
+  --sel:#DCE9F2;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E171C; --surface:#15222A; --ink:#E6EEF2; --muted:#93A5B0; --line:#2A3C46;
+    --blue:#6DB3E0; --mag:#F07AB0; --ok:#5CC48C; --warn:#E0B04F; --bad:#F2796F; --sel:#1D3442;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E171C; --surface:#15222A; --ink:#E6EEF2; --muted:#93A5B0; --line:#2A3C46;
+  --blue:#6DB3E0; --mag:#F07AB0; --ok:#5CC48C; --warn:#E0B04F; --bad:#F2796F; --sel:#1D3442;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 96px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.5}
+.wrap{max-width:780px;margin:0 auto;padding:0 16px 64px}
+header.top{padding:28px 0 12px}
+h1{font-size:1.75rem;line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+
+/* risk chain */
+.chain{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line)}
+.chain ol{list-style:none;margin:0;padding:0;display:flex;gap:0;align-items:stretch;flex-wrap:wrap}
+.chain li{flex:1 1 0;min-width:84px;padding:6px 10px 6px 12px;border-left:3px solid var(--mag);position:relative}
+.chain li+li{margin-left:0}
+.chain .k{display:block;font-size:.78rem;color:var(--muted)}
+.chain .v{display:block;font-size:1.35rem;font-weight:700;color:var(--mag);line-height:1.2}
+.chain .v.na{color:var(--muted)}
+.chain .v.bad{color:var(--bad)}
+
+section{margin-top:36px}
+h2{font-size:1.25rem;margin:0 0 4px}
+h2 small{font-weight:400;color:var(--muted);font-size:.95rem;margin-left:6px}
+.sub{color:var(--muted);margin:0 0 14px;max-width:66ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+label{display:block;font-weight:700;font-size:.92rem;margin-bottom:4px}
+.hint{display:block;font-weight:400;color:var(--muted);font-size:.85rem}
+input[type=text],input[type=number],select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:8px 10px}
+textarea{min-height:84px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--blue);outline-offset:1px}
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.check{display:flex;gap:8px;align-items:flex-start;font-weight:400;margin:6px 0}
+.check input{margin-top:4px;width:18px;height:18px;flex:none}
+.res{margin-top:14px;padding:12px 14px;border-left:4px solid var(--mag);background:var(--sel);border-radius:0 4px 4px 0}
+.res b{color:var(--mag)}
+.note{font-size:.88rem;color:var(--muted);margin-top:8px}
+.warn{color:var(--warn);font-weight:700}
+.bad{color:var(--bad);font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+.scroll{overflow-x:auto}
+th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{font-size:.85rem;color:var(--muted);font-weight:700}
+td.lvl{font-weight:700;white-space:nowrap}
+.lvl-H{color:var(--mag)} .lvl-M{color:var(--blue)} .lvl-L{color:var(--ok)} .lvl-NR{color:var(--muted)}
+.opts{display:grid;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--bg);font-weight:400;margin:0}
+.opt input{margin-top:4px;flex:none}
+.opt.on{border-color:var(--mag);background:var(--sel)}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+button{font:inherit;font-weight:700;padding:9px 16px;border-radius:4px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer}
+button.sec{background:transparent;color:var(--blue)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) button:not(.sec){color:#0E171C}}
+:root[data-theme="dark"] button:not(.sec){color:#0E171C}
+#doc{min-height:420px;font-size:.9rem;line-height:1.45}
+.disc{margin-top:36px;padding:14px 16px;border:1px dashed var(--line);border-radius:6px;font-size:.9rem;color:var(--muted)}
+.disc b{color:var(--ink)}
+@media (max-width:520px){.chain li{min-width:70px;padding:4px 6px 4px 8px}.chain .v{font-size:1.15rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <h1>SORA 2.5 application assistant</h1>
+  <p class="lede">Work through the ten SORA steps. The tool calculates the risk classes and builds draft application text. Your answers stay in this browser.</p>
+</header>
+
+<div class="chain" aria-live="polite">
+  <ol>
+    <li><span class="k">iGRC</span><span class="v" id="c-igrc">–</span></li>
+    <li><span class="k">Final GRC</span><span class="v" id="c-grc">–</span></li>
+    <li><span class="k">Initial ARC</span><span class="v" id="c-arc0">–</span></li>
+    <li><span class="k">Residual ARC</span><span class="v" id="c-arc">–</span></li>
+    <li><span class="k">SAIL</span><span class="v" id="c-sail">–</span></li>
+  </ol>
+</div>
+
+<!-- STEP 1 -->
+<section id="s1">
+  <h2>Step 1 <small>Describe the operation</small></h2>
+  <p class="sub">Plain facts. The authority reads this first, so keep it concrete.</p>
+  <div class="card">
+    <div class="grid">
+      <div class="field"><label for="applicant">Operator name and registration</label><input type="text" id="applicant" data-k="applicant"></div>
+      <div class="field"><label for="uas">UAS make, model, MTOM</label><input type="text" id="uas" data-k="uas"></div>
+    </div>
+    <div class="field"><label for="purpose">What is the operation?<span class="hint">Purpose, payload, what the UA does during a typical flight.</span></label><textarea id="purpose" data-k="purpose"></textarea></div>
+    <div class="grid">
+      <div class="field"><label for="los">Line of sight</label>
+        <select id="los" data-k="los"><option value="VLOS">VLOS</option><option value="EVLOS">EVLOS</option><option value="BVLOS">BVLOS</option></select></div>
+      <div class="field"><label for="schedule">When and how often?</label><input type="text" id="schedule" data-k="schedule" placeholder="e.g. daytime, ~40 flights/year"></div>
+    </div>
+    <div class="field"><label for="location">Where?<span class="hint">Area, coordinates or map reference, airspace, nearby airports.</span></label><textarea id="location" data-k="location"></textarea></div>
+    <div class="field"><label for="geo">Flight geography<span class="hint">Shape, size, maximum height AGL.</span></label><textarea id="geo" data-k="geo"></textarea></div>
+    <div class="field"><label for="cont">Contingency volume<span class="hint">How big, and how you derived it (position error, flight technical error, map error, latency, height gain in contingency).</span></label><textarea id="cont" data-k="cont"></textarea></div>
+    <div class="field"><label for="buffer">Ground risk buffer<span class="hint">Size and method. The 1-to-1 principle (buffer = height) is the usual starting point.</span></label><textarea id="buffer" data-k="buffer"></textarea></div>
+    <div class="field"><label for="crew">Remote crew<span class="hint">Roles, number of people, competence.</span></label><textarea id="crew" data-k="crew"></textarea></div>
+    <div class="field"><label for="procs">Normal, contingency and emergency procedures<span class="hint">One line each is fine at this stage. What triggers each one, and what the crew does.</span></label><textarea id="procs" data-k="procs"></textarea></div>
+  </div>
+</section>
+
+<!-- STEP 2 -->
+<section id="s2">
+  <h2>Step 2 <small>Intrinsic ground risk class</small></h2>
+  <p class="sub">No mitigations here. Use the highest population density anywhere in the operational volume plus ground risk buffer.</p>
+  <div class="card">
+    <div class="grid">
+      <div class="field"><label for="dim">Max characteristic dimension (m)<span class="hint">Wingspan, rotor diameter, or tip-to-tip.</span></label><input type="number" id="dim" data-k="dim" step="any" min="0"></div>
+      <div class="field"><label for="speed">Max speed (m/s)<span class="hint">Designer's maximum commanded airspeed, not mission speed.</span></label><input type="number" id="speed" data-k="speed" step="any" min="0"></div>
+      <div class="field"><label for="mass">Mass (g)<span class="hint">Used for the 250 g rule.</span></label><input type="number" id="mass" data-k="mass" step="any" min="0"></div>
+    </div>
+    <div class="field"><label for="dens">Highest population density in the footprint</label>
+      <select id="dens" data-k="dens" data-num="1">
+        <option value="">Choose…</option>
+        <option value="0">Controlled ground area (only involved people)</option>
+        <option value="1">Under 5 people/km² – remote</option>
+        <option value="2">Under 50 – lightly populated</option>
+        <option value="3">Under 500 – sparsely populated</option>
+        <option value="4">Under 5,000 – suburban</option>
+        <option value="5">Under 50,000 – high-density urban</option>
+        <option value="6">Over 50,000 – crowds, densest city areas</option>
+      </select></div>
+    <div class="field"><label for="densSrc">Where does the density figure come from?<span class="hint">Map, grid size, date. Use the map your authority designates if there is one.</span></label><input type="text" id="densSrc" data-k="densSrc"></div>
+    <div class="res" id="r-igrc"></div>
+  </div>
+</section>
+
+<!-- STEP 3 -->
+<section id="s3">
+  <h2>Step 3 <small>Final ground risk class (optional)</small></h2>
+  <p class="sub">Each credit needs evidence at the stated robustness level (SORA Annex B). Only claim what you can prove.</p>
+  <div class="card">
+    <div class="grid">
+      <div class="field"><label for="m1a">M1(A) Sheltering</label>
+        <select id="m1a" data-k="m1a" data-num="1"><option value="0">None</option><option value="1">Low (−1)</option><option value="2">Medium (−2)</option></select></div>
+      <div class="field"><label for="m1b">M1(B) Operational restrictions</label>
+        <select id="m1b" data-k="m1b" data-num="1"><option value="0">None</option><option value="1">Medium (−1)</option><option value="2">High (−2)</option></select></div>
+      <div class="field"><label for="m1c">M1(C) Ground observation</label>
+        <select id="m1c" data-k="m1c" data-num="1"><option value="0">None</option><option value="1">Low (−1)</option></select></div>
+      <div class="field"><label for="m2">M2 Reduced impact effects</label>
+        <select id="m2" data-k="m2" data-num="1"><option value="0">None</option><option value="1">Medium (−1)</option><option value="2">High (−2)</option></select></div>
+    </div>
+    <div class="field"><label for="mitText">How is each credit achieved?<span class="hint">E.g. parachute type and test evidence, time-of-day restrictions, observers on the ground.</span></label><textarea id="mitText" data-k="mitText"></textarea></div>
+    <div class="res" id="r-grc"></div>
+  </div>
+</section>
+
+<!-- STEP 4-6 -->
+<section id="s4">
+  <h2>Steps 4–6 <small>Air risk and tactical mitigation</small></h2>
+  <p class="sub">Describe the airspace in the operational volume. If your authority or ANSP publishes an air risk map, use that instead of this tree.</p>
+  <div class="card">
+    <label class="check"><input type="checkbox" id="atypical" data-k="atypical">Atypical or segregated airspace (reserved or restricted, or manned aircraft normally not present)</label>
+    <div class="grid" style="margin-top:10px">
+      <div class="field"><label for="airport">Airport or heliport environment?</label>
+        <select id="airport" data-k="airport"><option value="no">No</option><option value="bcd">Yes – Class B, C or D</option><option value="efg">Yes – Class E, F or G</option></select></div>
+      <div class="field"><label for="height">Maximum height of operational volume</label>
+        <select id="height" data-k="height"><option value="below500">At or below 500 ft AGL</option><option value="above500">Above 500 ft AGL, up to FL600</option><option value="fl600">Above FL600</option></select></div>
+      <div class="field"><label for="area">Area below</label>
+        <select id="area" data-k="area"><option value="rural">Rural</option><option value="urban">Urban</option></select></div>
+    </div>
+    <label class="check"><input type="checkbox" id="tmz" data-k="tmz">Inside a Mode-S veil or Transponder Mandatory Zone</label>
+    <label class="check"><input type="checkbox" id="ctrl" data-k="ctrl">Controlled airspace</label>
+    <div class="res" id="r-arc0"></div>
+
+    <div class="field" style="margin-top:16px"><label for="resid">Residual ARC after strategic mitigations (Annex C)<span class="hint">Leave at the initial ARC if you claim no reduction.</span></label>
+      <select id="resid"></select></div>
+    <label class="check"><input type="checkbox" id="observer" data-k="observer">An airspace observer stands next to the remote pilot (VLOS flying counts automatically)</label>
+    <div class="field"><label for="arcText">Strategic mitigations and why they hold<span class="hint">Time limits, boundaries, local air traffic data, ANSP agreement.</span></label><textarea id="arcText" data-k="arcText"></textarea></div>
+    <div class="res" id="r-arc"></div>
+  </div>
+</section>
+
+<!-- STEP 7 -->
+<section id="s7">
+  <h2>Step 7 <small>SAIL</small></h2>
+  <div class="card"><div class="res" style="margin-top:0" id="r-sail"></div></div>
+</section>
+
+<!-- STEP 8 -->
+<section id="s8">
+  <h2>Step 8 <small>Containment</small></h2>
+  <p class="sub">Containment protects the adjacent area if the UA flies away. You choose operational limits, and the table gives the robustness you need.</p>
+  <div class="card">
+    <label class="check"><input type="checkbox" id="shelter" data-k="shelter">Sheltering applies in the adjacent area (only matters for 3 m class UA)</label>
+    <div class="res" id="r-cont-head"></div>
+    <div class="opts" id="cont-opts" style="margin-top:12px"></div>
+    <div class="field" style="margin-top:14px"><label for="adjText">Adjacent area findings<span class="hint">Average population density between the buffer and the outer limit, and any outdoor assemblies within 1 km.</span></label><textarea id="adjText" data-k="adjText"></textarea></div>
+    <div class="res" id="r-cont"></div>
+  </div>
+</section>
+
+<!-- STEP 9 -->
+<section id="s9">
+  <h2>Step 9 <small>Operational safety objectives</small></h2>
+  <p class="sub">The robustness each OSO needs at your SAIL, and what kind of evidence that means. Write one line on how you will comply and tick when the evidence is ready. The detailed criteria for each OSO are in SORA Annex E, which this tool does not reproduce.</p>
+  <div class="card scroll">
+    <table id="oso"><thead><tr><th>OSO</th><th>Objective</th><th>Needed</th><th>Evidence to have ready</th><th>How you comply</th></tr></thead><tbody></tbody></table>
+  </div>
+</section>
+
+<!-- STEP 10 -->
+<section id="s10">
+  <h2>Step 10 <small>Draft application text</small></h2>
+  <p class="sub">Built from your answers. Edit freely, then copy it into your safety portfolio. Empty fields show as [to complete].</p>
+  <div class="btns">
+    <button id="build">Rebuild text</button>
+    <button id="copy" class="sec">Copy</button>
+    <button id="dl" class="sec" hidden>Save as file</button>
+    <button id="reset" class="sec">Clear all answers</button>
+  </div>
+  <textarea id="doc" aria-label="Draft application text"></textarea>
+  <div class="note" id="copymsg"></div>
+</section>
+
+<div class="disc">
+  <b>Read before relying on this.</b>
+  The tables come from the JARUS SORA 2.5 Main Body (13 May 2024). EASA adopted SORA 2.5 as AMC to Article 11 of Regulation (EU) 2019/947, so check each number against EASA's published AMC/GM and your national authority's forms. The air risk tree was typed from SORA's 12 airspace categories, not copied from the source figure, so check it against Figure 6. This tool is an aid for the operator. It does not replace the authority's assessment, Annexes A, B, C, D and E, or your own judgement.
+</div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- data (SORA 2.5 Main Body) ---------- */
+var DIMS=[1,3,8,20,40], SPEEDS=[25,35,75,120,200];
+var DENS_LABEL=["controlled ground area","under 5 people/km²","under 50 people/km²","under 500 people/km²","under 5,000 people/km²","under 50,000 people/km²","over 50,000 people/km²"];
+var IGRC=[
+ [1,1,2,3,3],
+ [2,3,4,5,6],
+ [3,4,5,6,7],
+ [4,5,6,7,8],
+ [5,6,7,8,9],
+ [6,7,8,9,10],
+ [7,8,null,null,null]
+];
+var COLNAME=["1 m / 25 m/s","3 m / 35 m/s","8 m / 75 m/s","20 m / 120 m/s","40 m / 200 m/s"];
+var ARC=["a","b","c","d"];
+var SAIL_ROW={ /* by final GRC row: 0 = GRC<=2, 1 = 3 ... 5 = 7 */
+ 0:["I","II","IV","VI"],1:["II","II","IV","VI"],2:["III","III","IV","VI"],
+ 3:["IV","IV","IV","VI"],4:["V","V","V","VI"],5:["VI","VI","VI","VI"]
+};
+var SAILS=["I","II","III","IV","V","VI"];
+var TMPR={a:"No requirement",b:"Low",c:"Medium",d:"High"};
+
+/* containment: key = SAIL group; cells least → most restrictive operational limits */
+var OOS="Out of scope";
+var CT={
+ 8:{t:"Table 8 – 1 m UA, sheltering assumed",cols:["No density limit","Under 50,000/km²","Under 50,000/km²"],
+   r:{"I":["High","Medium","Low"],"II":["High","Medium","Low"],"III":["Medium","Low","Low"],"IV":["Low","Low","Low"],"V":["Low","Low","Low"],"VI":["Low","Low","Low"]}},
+ 9:{t:"Table 9 – 3 m UA, sheltering applicable",cols:["No density limit","Under 50,000/km²","Under 50,000/km²","Under 5,000/km²"],
+   r:{"I":[OOS,"High","Medium","Low"],"II":[OOS,"High","Medium","Low"],"III":[OOS,"Medium","Low","Low"],"IV":["Medium","Low","Low","Low"],"V":["Low","Low","Low","Low"],"VI":["Low","Low","Low","Low"]}},
+ 10:{t:"Table 10 – 3 m UA, sheltering not applicable",cols:["No density limit","Under 50,000/km²","Under 5,000/km²","Under 500/km²"],
+   r:{"I":[OOS,"High","Medium","Low"],"II":[OOS,"High","Medium","Low"],"III":[OOS,"Medium","Low","Low"],"IV":["Medium","Low","Low","Low"],"V":["Low","Low","Low","Low"],"VI":["Low","Low","Low","Low"]}},
+ 11:{t:"Table 11 – 8 m UA",cols:["No density limit","Under 50,000/km²","Under 5,000/km²","Under 500/km²","Under 50/km²"],
+   r:{"I":[OOS,OOS,"High","Medium","Low"],"II":[OOS,OOS,"High","Medium","Low"],"III":[OOS,OOS,"Medium","Low","Low"],"IV":[OOS,"Medium","Low","Low","Low"],"V":["Medium","Low","Low","Low","Low"],"VI":["Low","Low","Low","Low","Low"]}},
+ 12:{t:"Table 12 – 20 m UA",cols:["No density limit","Under 50,000/km²","Under 5,000/km²","Under 500/km²","Under 50/km²"],
+   r:{"I":[OOS,OOS,OOS,"High","Medium"],"II":[OOS,OOS,OOS,"High","Medium"],"III":[OOS,OOS,OOS,"Medium","Low"],"IV":[OOS,OOS,"Medium","Low","Low"],"V":[OOS,"Medium","Low","Low","Low"],"VI":["Medium","Low","Low","Low","Low"]}},
+ 13:{t:"Table 13 – up to 40 m UA",cols:["No density limit","Under 50,000/km²","Under 5,000/km²","Under 500/km²","Under 50/km²"],
+   r:{"I":[OOS,OOS,OOS,OOS,"High"],"II":[OOS,OOS,OOS,OOS,"High"],"III":[OOS,OOS,OOS,OOS,"Medium"],"IV":[OOS,OOS,OOS,"Medium","Low"],"V":[OOS,OOS,"Medium","Low","Low"],"VI":[OOS,"Medium","Low","Low","Low"]}}
+};
+
+var OSOS=[
+ ["01","Operator is competent and/or proven",["NR","L","M","H","H","H"]],
+ ["02","UAS manufactured by a competent and/or proven entity",["NR","NR","L","M","H","H"]],
+ ["03","UAS maintained by a competent and/or proven entity",["L","L","M","M","H","H"]],
+ ["04","Safety-essential components built to an airworthiness design standard",["NR","NR","NR","L","M","H"]],
+ ["05","UAS designed for system safety and reliability",["NR","NR","L","M","H","H"]],
+ ["06","C3 link suitable for the operation",["NR","L","L","M","H","H"]],
+ ["07","Conformity check of the UAS configuration",["L","L","M","M","H","H"]],
+ ["08","Operational procedures defined, validated and followed",["L","M","H","H","H","H"]],
+ ["09","Remote crew trained and current",["L","L","M","M","H","H"]],
+ ["13","External services adequate for the operation",["L","L","M","H","H","H"]],
+ ["16","Multi-crew coordination",["L","L","M","M","H","H"]],
+ ["17","Remote crew fit to operate",["L","L","M","M","H","H"]],
+ ["18","Automatic protection of flight envelope from human error",["NR","NR","L","M","H","H"]],
+ ["19","Safe recovery from human error",["NR","NR","L","M","M","H"]],
+ ["20","Human factors evaluation done, HMI suitable",["NR","L","L","M","M","H"]],
+ ["23","Environmental conditions defined, measurable and adhered to",["L","L","M","M","H","H"]],
+ ["24","UAS designed and qualified for adverse environmental conditions",["NR","NR","M","H","H","H"]]
+];
+var LV={NR:"Not required",L:"Low",M:"Medium",H:"High"};
+var EVID={
+ NR:"Nothing to show the authority. Consider meeting it at low level anyway.",
+ L:"Your declaration that the objective is met, after you have gathered the evidence. Keep it on file and give it only if asked.",
+ M:"Supporting evidence the authority can check: test results, operational data, records.",
+ H:"Evidence verified by a competent third party, with their compliance report."
+};
+
+/* ---------- state ---------- */
+var KEY="sora25-assistant-draft";
+var S={los:"VLOS",airport:"no",height:"below500",area:"rural",m1a:0,m1b:0,m1c:0,m2:0,resid:null,contPick:null,oso:{},ev:{}};
+function load(){try{var t=localStorage.getItem(KEY);if(t){var o=JSON.parse(t);for(var k in o)S[k]=o[k];}}catch(e){}if(!S.ev)S.ev={};if(!S.oso)S.oso={};}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function $(id){return document.getElementById(id);}
+function num(v){var n=parseFloat(v);return isNaN(n)?null:n;}
+function esc(t){return String(t==null?"":t);}
+
+/* ---------- calculations ---------- */
+function colIndex(){
+  var d=S.dim,s=S.speed;
+  if(d==null||s==null) return null;
+  if(d>40||s>200) return -1;
+  var a=0,b=0;
+  while(d>DIMS[a]) a++;
+  while(s>SPEEDS[b]) b++;
+  return Math.max(a,b);
+}
+function calcIGRC(){
+  var col=colIndex();
+  if(col==null||S.dens==null||S.dens==="") return {state:"missing"};
+  if(col===-1) return {state:"out",why:"Dimension over 40 m or speed over 200 m/s. Use SORA Annex F, or consider the certified category."};
+  if(S.mass!=null&&S.mass<=250&&S.speed<=25) return {state:"ok",v:1,col:col,rule:"250 g rule: UA of 250 g or less at 25 m/s or less is iGRC 1 whatever the density."};
+  var v=IGRC[S.dens][col];
+  if(v==null) return {state:"out",col:col,why:"This density with this UA size is not part of SORA. Consider the certified category or a different area."};
+  return {state:"ok",v:v,col:col};
+}
+function calcGRC(ig){
+  if(ig.state!=="ok") return null;
+  var c1a=+S.m1a, c1b=+S.m1b, c1c=+S.m1c, c2=+S.m2;
+  var m1=c1a+c1b+c1c;
+  var floor=IGRC[0][ig.col];
+  var afterM1=Math.max(ig.v-m1,floor);
+  var m1applied=ig.v-afterM1;
+  var g=Math.max(afterM1-c2,1);
+  return {v:g,m1:m1,m1applied:m1applied,floor:floor,capped:(m1>m1applied),c2:c2};
+}
+function initialARC(){
+  if(S.atypical) return 0;
+  if(S.height==="fl600") return 1;
+  if(S.airport==="bcd") return 3;
+  if(S.airport==="efg") return 2;
+  var ctrl=S.tmz||S.ctrl;
+  if(S.height==="above500") return ctrl?3:2;
+  if(ctrl) return 2;
+  return S.area==="urban"?2:1;
+}
+function residualARC(a0){
+  var pick=(S.resid==null||S.resid>a0)?a0:S.resid;
+  var vlos=(S.los==="VLOS"||S.observer);
+  var adj=a0;
+  if(vlos&&a0>1) adj=a0-1;
+  return {v:Math.min(pick,adj),vlosApplied:(vlos&&a0>1),pick:pick};
+}
+function calcSAIL(grc,arc){
+  if(grc==null) return null;
+  if(grc>7) return "cert";
+  var row=grc<=2?0:grc-2;
+  return SAIL_ROW[row][arc];
+}
+function containmentTable(col){
+  if(col==null||col<0) return null;
+  if(col===0) return 8;
+  if(col===1) return S.shelter?9:10;
+  return [null,null,11,12,13][col];
+}
+function adjDistKm(){
+  if(S.speed==null) return null;
+  var m=S.speed*180;
+  return Math.min(Math.max(m,5000),35000)/1000;
+}
+
+/* ---------- render ---------- */
+function setChain(id,txt,cls){var e=$(id);e.textContent=txt;e.className="v"+(cls?" "+cls:"");}
+function render(){
+  var ig=calcIGRC();
+  var r=$("r-igrc");
+  if(ig.state==="missing"){r.innerHTML="Fill in size, speed and density to get the iGRC.";setChain("c-igrc","–","na");}
+  else if(ig.state==="out"){r.innerHTML='<span class="bad">Outside SORA.</span> '+ig.why;setChain("c-igrc","n/a","bad");}
+  else{
+    r.innerHTML="Intrinsic GRC: <b>"+ig.v+"</b>. The table column is <b>"+COLNAME[ig.col]+"</b>, chosen by whichever of size and speed is more demanding."+(ig.rule?" "+ig.rule:"");
+    setChain("c-igrc",String(ig.v));
+  }
+
+  var g=calcGRC(ig), gr=$("r-grc");
+  if(!g){gr.textContent="Complete Step 2 first.";setChain("c-grc","–","na");}
+  else{
+    var t="Final GRC: <b>"+g.v+"</b>.";
+    if(g.capped) t+=' <span class="warn">M1 credits are capped. The final GRC from M1 cannot go below '+g.floor+" for this column, so only −"+g.m1applied+" of −"+g.m1+" counts.</span>";
+    if(+S.m1a>0&&+S.dens===6) t+=' <span class="warn">Sheltering does not apply over large open assemblies of people.</span>';
+    if(g.v>7) t+=' <span class="bad">Above 7 is outside SORA. Talk to the authority about the certified category.</span>';
+    t+='<div class="note">The cap and the floor of 1 follow SORA Step 3. Check Annex B for how M2 interacts with the cap.</div>';
+    gr.innerHTML=t;
+    setChain("c-grc",String(g.v),g.v>7?"bad":"");
+  }
+
+  var a0=initialARC();
+  $("r-arc0").innerHTML="Initial ARC: <b>ARC-"+ARC[a0]+"</b>.";
+  setChain("c-arc0","ARC-"+ARC[a0]);
+
+  var sel=$("resid"),opts="";
+  for(var i=0;i<=a0;i++) opts+='<option value="'+i+'"'+(((S.resid==null||S.resid>a0)?a0:S.resid)===i?" selected":"")+'>ARC-'+ARC[i]+(i===a0?" (no reduction)":"")+"</option>";
+  sel.innerHTML=opts;
+  var rs=residualARC(a0), ra=ARC[rs.v];
+  var at="Residual ARC: <b>ARC-"+ra+"</b>. Tactical mitigation performance requirement: <b>"+TMPR[ra]+"</b>.";
+  if(rs.vlosApplied) at+=" VLOS or an observer next to the pilot lowers the class by one, but not to ARC-a.";
+  if(S.los==="BVLOS"&&rs.v>0) at+=" BVLOS: you must show the TMPR with detect-and-avoid or equivalent (Annex D).";
+  if(S.los!=="BVLOS"&&rs.v>0) at+=" VLOS and EVLOS count as an acceptable tactical mitigation. Describe how you detect and avoid traffic.";
+  $("r-arc").innerHTML=at;
+  setChain("c-arc","ARC-"+ra);
+
+  var sail=calcSAIL(g?g.v:null,rs.v);
+  var sr=$("r-sail");
+  if(sail==null){sr.textContent="Complete Steps 2 to 6 to get the SAIL.";setChain("c-sail","–","na");}
+  else if(sail==="cert"){sr.innerHTML='<span class="bad">Final GRC above 7. This is a certified-category operation.</span>';setChain("c-sail","Cert.","bad");}
+  else{sr.innerHTML="SAIL <b>"+sail+"</b>, from final GRC "+g.v+" and residual ARC-"+ra+".";setChain("c-sail",sail);}
+
+  renderContainment(ig,sail);
+  renderOSO(sail);
+  save();
+}
+
+function renderContainment(ig,sail){
+  var head=$("r-cont-head"),box=$("cont-opts"),res=$("r-cont");
+  box.innerHTML="";res.innerHTML="";
+  if(S.mass!=null&&S.mass<=250){head.innerHTML="UA of 250 g or less: <b>Low containment</b>, no operational limits for the adjacent area.";return;}
+  if(ig.state!=="ok"||sail==null||sail==="cert"){head.textContent="Complete Steps 2 to 7 first.";return;}
+  var tn=containmentTable(ig.col);
+  if(!tn){head.innerHTML='<span class="bad">No containment table fits. Use Annex F.</span>';return;}
+  var T=CT[tn], row=T.r[sail];
+  var d=adjDistKm();
+  head.innerHTML="Use <b>"+T.t+"</b>, row SAIL "+sail+". The adjacent area reaches <b>"+(d==null?"–":d.toFixed(1))+" km</b> from the operational volume (3 minutes at maximum speed, kept between 5 and 35 km).";
+  var h="";
+  for(var i=0;i<row.length;i++){
+    var on=(S.contPick===i);
+    h+='<label class="opt'+(on?" on":"")+'"><input type="radio" name="cpick" value="'+i+'"'+(on?" checked":"")+'><span><b>'+T.cols[i]+"</b> average in the adjacent area<br>Containment: <b>"+row[i]+'</b></span></label>';
+  }
+  box.innerHTML=h;
+  var ins=box.querySelectorAll("input");
+  for(var j=0;j<ins.length;j++) ins[j].addEventListener("change",function(e){S.contPick=+e.target.value;render();});
+  if(S.contPick!=null&&row[S.contPick]!=null){
+    var c=row[S.contPick];
+    res.innerHTML=(c===OOS?'<span class="bad">Out of scope. Pick stricter limits or raise the SAIL.</span>':"Required containment: <b>"+c+"</b>.")+'<div class="note">Each column also carries a limit on outdoor assemblies within 1 km of the operational volume. Read it from the header of the printed '+T.t.split(" –")[0]+" and write both limits into your operations manual.</div>";
+  } else res.innerHTML='<div class="note">Pick the operational limit you will accept. Stricter limits mean lower containment robustness.</div>';
+}
+
+function renderOSO(sail){
+  var tb=document.querySelector("#oso tbody");
+  var idx=(sail&&sail!=="cert")?SAILS.indexOf(sail):-1;
+  var h="";
+  for(var i=0;i<OSOS.length;i++){
+    var o=OSOS[i], lv=idx>=0?o[2][idx]:null;
+    var txt=lv?(lv==="NR"?"Not required (consider low)":LV[lv]):"–";
+    h+="<tr><td>"+o[0]+"</td><td>"+o[1]+(o[0]==="05"&&idx===1?'<div class="hint">Footnote (c) in Table 14 applies at SAIL II for novel or complex designs.</div>':"")+'</td><td class="lvl lvl-'+(lv||"")+'">'+txt+'</td><td>'+(lv?EVID[lv]:"–")+'<label class="check"><input type="checkbox" data-ev="'+o[0]+'"'+(S.ev&&S.ev[o[0]]?" checked":"")+'>Evidence ready</label><div class="hint">Criteria: Annex E, OSO#'+o[0]+'</div></td><td><input type="text" data-oso="'+o[0]+'" aria-label="How you comply with OSO '+o[0]+'" value=""></td></tr>';
+  }
+  tb.innerHTML=h;
+  var ins=tb.querySelectorAll("input[data-oso]");
+  for(var j=0;j<ins.length;j++){
+    ins[j].value=S.oso[ins[j].getAttribute("data-oso")]||"";
+    ins[j].addEventListener("input",function(e){S.oso[e.target.getAttribute("data-oso")]=e.target.value;save();});
+  }
+  var evs=tb.querySelectorAll("input[data-ev]");
+  for(var m=0;m<evs.length;m++){
+    evs[m].addEventListener("change",function(e){S.ev[e.target.getAttribute("data-ev")]=e.target.checked;save();});
+  }
+}
+
+/* ---------- document ---------- */
+function T(v){return (v==null||v==="")?"[to complete]":String(v);}
+function build(){
+  var ig=calcIGRC(), g=calcGRC(ig), a0=initialARC(), rs=residualARC(a0), ra=ARC[rs.v];
+  var sail=calcSAIL(g?g.v:null,rs.v), idx=(sail&&sail!=="cert")?SAILS.indexOf(sail):-1;
+  var L=[];
+  L.push("SORA 2.5 SAFETY PORTFOLIO – DRAFT","");
+  L.push("1. OPERATION DESCRIPTION");
+  L.push("Operator: "+T(S.applicant));
+  L.push("UAS: "+T(S.uas));
+  L.push("Purpose of operation: "+T(S.purpose));
+  L.push("Line of sight: "+S.los+". Schedule: "+T(S.schedule));
+  L.push("Location and airspace: "+T(S.location));
+  L.push("Flight geography: "+T(S.geo));
+  L.push("Contingency volume: "+T(S.cont));
+  L.push("Ground risk buffer: "+T(S.buffer));
+  L.push("Remote crew: "+T(S.crew));
+  L.push("Procedures (normal, contingency, emergency): "+T(S.procs),"");
+  L.push("2. INTRINSIC GROUND RISK CLASS");
+  L.push("Maximum characteristic dimension: "+T(S.dim)+" m. Maximum speed: "+T(S.speed)+" m/s. Mass: "+T(S.mass)+" g.");
+  L.push("Highest population density in the iGRC footprint: "+(S.dens===""||S.dens==null?"[to complete]":DENS_LABEL[S.dens])+". Source: "+T(S.densSrc));
+  L.push(ig.state==="ok"?"iGRC: "+ig.v+(ig.rule?" ("+ig.rule+")":""):"iGRC: [not determined"+(ig.state==="out"?" – outside SORA table":"")+"]","");
+  L.push("3. FINAL GROUND RISK CLASS");
+  var mt=[];
+  if(+S.m1a) mt.push("M1(A) sheltering, "+["","low","medium"][S.m1a]+" robustness (−"+S.m1a+")");
+  if(+S.m1b) mt.push("M1(B) operational restrictions, "+["","medium","high"][S.m1b]+" robustness (−"+S.m1b+")");
+  if(+S.m1c) mt.push("M1(C) ground observation, low robustness (−1)");
+  if(+S.m2) mt.push("M2 reduced impact effects, "+["","medium","high"][S.m2]+" robustness (−"+S.m2+")");
+  L.push("Mitigations claimed: "+(mt.length?mt.join("; "):"none"));
+  if(mt.length) L.push("How achieved: "+T(S.mitText));
+  L.push("Final GRC: "+(g?g.v:"[not determined]"),"");
+  L.push("4–6. AIR RISK");
+  L.push("Airspace: "+(S.atypical?"atypical or segregated":"airport environment: "+({no:"no",bcd:"yes, Class B/C/D",efg:"yes, Class E/F/G"})[S.airport]+"; height: "+({below500:"at or below 500 ft AGL",above500:"above 500 ft AGL up to FL600",fl600:"above FL600"})[S.height]+"; Mode-S veil/TMZ: "+(S.tmz?"yes":"no")+"; controlled: "+(S.ctrl?"yes":"no")+"; area: "+S.area));
+  L.push("Initial ARC: ARC-"+ARC[a0]);
+  L.push("Strategic mitigations: "+T(S.arcText));
+  L.push("Residual ARC: ARC-"+ra+(rs.vlosApplied?" (includes one-class reduction for VLOS or observer)":""));
+  L.push("Tactical mitigation performance requirement: "+TMPR[ra]+(S.los==="BVLOS"&&rs.v>0?" – to be shown with detect-and-avoid or equivalent (Annex D)":"")+"","");
+  L.push("7. SAIL");
+  L.push(sail==="cert"?"Final GRC above 7: certified category.":"SAIL: "+(sail||"[not determined]"),"");
+  L.push("8. CONTAINMENT");
+  if(S.mass!=null&&S.mass<=250){L.push("UA of 250 g or less: low containment, no operational limits.");}
+  else{
+    var tn=(ig.state==="ok")?containmentTable(ig.col):null;
+    if(tn&&idx>=0){
+      var Tb=CT[tn], row=Tb.r[sail], d=adjDistKm();
+      L.push("Table used: "+Tb.t+". Adjacent area outer limit: "+(d==null?"[to complete]":d.toFixed(1))+" km.");
+      L.push("Adjacent area findings: "+T(S.adjText));
+      if(S.contPick!=null&&row[S.contPick]!=null) L.push("Operational limit chosen: average adjacent-area density "+Tb.cols[S.contPick].toLowerCase()+" [add outdoor assembly limit from table header]. Required containment robustness: "+row[S.contPick]+".");
+      else L.push("Operational limit chosen: [to complete]");
+    } else L.push("[to complete once SAIL is known]");
+  }
+  L.push("","9. OPERATIONAL SAFETY OBJECTIVES");
+  for(var i=0;i<OSOS.length;i++){
+    var o=OSOS[i], lv=idx>=0?o[2][idx]:null;
+    L.push("OSO#"+o[0]+" "+o[1]+" – required: "+(lv?LV[lv]:"[SAIL needed]")+". Compliance: "+T(S.oso[o[0]])+". Evidence ready: "+(S.ev[o[0]]?"yes":"no")+(lv?" ("+EVID[lv]+")":""));
+  }
+  L.push("","10. EVIDENCE");
+  L.push("[List the documents in this portfolio and map each safety claim and OSO to its evidence. Low robustness may be a declaration. Medium needs supporting evidence. High needs third-party verification.]");
+  $("doc").value=L.join("\n");
+}
+
+/* ---------- wiring ---------- */
+function init(){
+  load();
+  var els=document.querySelectorAll("[data-k]");
+  for(var i=0;i<els.length;i++){
+    (function(el){
+      var k=el.getAttribute("data-k");
+      if(el.type==="checkbox") el.checked=!!S[k];
+      else if(S[k]!=null) el.value=S[k];
+      var h=function(){
+        if(el.type==="checkbox") S[k]=el.checked;
+        else if(el.type==="number") S[k]=num(el.value);
+        else if(el.getAttribute("data-num")) S[k]=el.value===""?"":+el.value;
+        else S[k]=el.value;
+        render();
+      };
+      el.addEventListener(el.tagName==="SELECT"||el.type==="checkbox"?"change":"input",h);
+    })(els[i]);
+  }
+  $("resid").addEventListener("change",function(e){S.resid=+e.target.value;render();});
+  $("build").addEventListener("click",build);
+  $("copy").addEventListener("click",function(){
+    var d=$("doc"),m=$("copymsg");
+    d.select();
+    var ok=false;
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(d.value).then(function(){m.textContent="Copied.";},function(){m.textContent="Copy blocked. The text is selected. Press Ctrl+C or Cmd+C.";});return;} ok=document.execCommand("copy"); }catch(e){}
+    m.textContent=ok?"Copied.":"The text is selected. Press Ctrl+C or Cmd+C.";
+  });
+  var armed=false;
+  $("reset").addEventListener("click",function(){
+    var b=$("reset");
+    if(!armed){armed=true;b.textContent="Click again to clear";setTimeout(function(){armed=false;b.textContent="Clear all answers";},4000);return;}
+    try{localStorage.removeItem(KEY);}catch(e){}
+    location.reload();
+  });
+  render();
+  build();
+  try{
+    if(window.claude&&claude.use){
+      claude.use("downloads").then(function(dl){
+        if(!dl) return;
+        var b=$("dl");
+        b.hidden=false;
+        b.addEventListener("click",function(){
+          build();
+          dl.save({filename:"sora25-draft.md",data:$("doc").value}).then(function(){
+            $("copymsg").textContent="Saved.";
+          },function(err){
+            $("copymsg").textContent=(err&&err.code==="declined")?"Save cancelled.":"Saving is not available here. Use Copy instead.";
+          });
+        });
+      },function(){});
+    }
+  }catch(e){}
+}
+init();
+})();
+</script>
+</body>
+</html>
