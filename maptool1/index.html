@@ -922,6 +922,49 @@ tr:hover td,tr.hl td{background:var(--sel)}
 .pop .pbtns{display:flex;flex-wrap:wrap;gap:.35rem}
 .leaflet-container a.leaflet-popup-close-button{width:28px;height:28px;font-size:22px}
 
+/* coordinate entry */
+.coordpanel{position:absolute;z-index:1150;top:12px;right:64px;width:min(410px,calc(100% - 150px));max-height:calc(100% - 24px);display:flex;flex-direction:column;background:var(--panel);border-radius:10px;box-shadow:0 4px 22px rgba(15,36,48,.32);overflow:hidden}
+.coordpanel[hidden]{display:none}
+.cp-head{display:flex;align-items:center;gap:.5rem;padding:.45rem .4rem .45rem .9rem;background:var(--night);color:#fff}
+.cp-head h2{flex:1;font:600 1.02rem/1.2 var(--cond);margin:0}
+.cp-head .ibtn{color:var(--mist)}
+.cp-head .ibtn:hover{background:var(--night-2);color:#fff}
+.cp-body{flex:1;min-height:0;overflow:auto;padding:.8rem .9rem .6rem;overscroll-behavior:contain}
+.cp-types{display:grid;grid-template-columns:repeat(3,1fr);gap:.3rem}
+.cp-types button{display:flex;align-items:center;justify-content:center;gap:.35rem;border:1px solid var(--line);background:#fff;border-radius:6px;padding:.38rem .3rem;font-size:.85rem}
+.cp-types button svg{width:16px;height:16px;flex:none}
+.cp-types button[aria-pressed=true]{background:var(--night);border-color:var(--night);color:#fff}
+.cp-types button:disabled{opacity:.35;cursor:default}
+.cp-sym{display:flex;align-items:center;gap:.6rem;margin-top:.55rem;font-size:.88rem}
+.cp-sym[hidden]{display:none}
+.cp-sym .sw{flex:none;display:grid;place-items:center;background:var(--page);border-radius:6px;padding:3px 6px}
+.cp-sym .sw svg{max-height:32px;max-width:56px}
+.cp-sym .st{flex:1;min-width:0}
+.cp-lbl{display:block;font-size:.82rem;font-weight:600;color:var(--muted);margin:.75rem 0 .3rem}
+#cpText{display:block;width:100%;min-height:8rem;resize:vertical;font:.86rem/1.5 var(--mono);padding:.5rem .6rem;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+.cp-row{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;margin-top:.5rem;font-size:.86rem;color:var(--muted)}
+.cp-row label{display:flex;align-items:center;gap:.35rem}
+.cp-row [hidden]{display:none}
+.cp-radius{display:flex;align-items:center;gap:.45rem;margin-top:.7rem;font-size:.88rem;font-weight:600;color:var(--muted)}
+.cp-radius[hidden]{display:none}
+.cp-radius input{width:7.5rem}
+.two label[hidden]{display:none}
+.cp-result{margin:.75rem 0 .4rem;font-size:.88rem}
+.cp-result.bad{color:#a3261e}
+.cp-list{list-style:none;margin:0;padding:0;max-height:200px;overflow:auto;border-top:1px solid var(--line)}
+.cp-list:empty{display:none}
+.cp-list li{display:flex;flex-wrap:wrap;align-items:baseline;gap:.15rem .6rem;padding:.28rem .25rem;border-bottom:1px solid var(--line);font-size:.8rem;cursor:pointer}
+.cp-list li:hover{background:var(--hover)}
+.cp-list .ln{color:var(--muted);min-width:3.4rem}
+.cp-list .v{font-family:var(--mono)}
+.cp-list .v.err{font-family:var(--sans);color:#a3261e}
+.cp-list .nm{color:var(--muted)}
+.cp-foot{display:flex;flex-wrap:wrap;gap:.45rem;padding:.65rem .9rem calc(.65rem + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:#fff}
+.cp-foot .btn{padding:.5rem .8rem}
+.cp-foot .btn:disabled{opacity:.45;cursor:default}
+.leaflet-tooltip.cpnum{background:var(--night);color:#fff;border:0;box-shadow:none;padding:0 4px;font:600 .72rem var(--sans)}
+.leaflet-tooltip.cpnum:before{display:none}
+
 @media (max-width:760px){
   .bar{height:44px}
   .bar h1 span,.panelbtn{display:none}
@@ -941,6 +984,9 @@ tr:hover td,tr.hl td{background:var(--sel)}
   .drawbar{top:64px;left:8px;right:60px;width:auto;transform:none;padding:.5rem .55rem .6rem .7rem}
   .metric b{font-size:1.05rem}
   #toast{bottom:calc(var(--fb) + 70px)}
+  .coordpanel{top:auto;left:0;right:0;bottom:0;width:auto;height:min(74vh,620px);max-height:none;border-radius:14px 14px 0 0;z-index:1200}
+  #cpText,.coordpanel input[type=text],.coordpanel input[type=number]{font-size:16px}
+  .symtop .btn{margin-top:.3rem}
   .readout{left:8px;bottom:calc(var(--fb) + 8px)}
   .leaflet-bottom.leaflet-left .leaflet-control-scale{margin-bottom:56px}
   .leaflet-control-attribution{font-size:10px}
@@ -998,6 +1044,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
       <section class="pane" id="p-layers" role="tabpanel" aria-labelledby="t-layers" hidden>
         <div class="lhead">
           <button class="btn sm" id="newLayer" type="button">New layer</button>
+          <button class="btn sm" id="cpOpen" type="button">Add by coordinates</button>
           <button class="btn ghost sm" id="importBtn" type="button">Import GeoJSON</button>
           <button class="btn ghost sm" id="expGeo" type="button">Export GeoJSON</button>
           <button class="btn ghost sm" id="expKml" type="button">Export KML</button>
@@ -1025,6 +1072,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
             <p class="symname" id="symName"></p>
             <input class="sidc" id="sidc" aria-label="SIDC code (20 digits)" spellcheck="false" inputmode="numeric" maxlength="20">
             <button class="btn sm" id="placeSym" type="button">Place on map</button>
+            <button class="btn ghost sm" id="symCoords" type="button">Add by coordinates</button>
           </div>
         </div>
         </div>
@@ -1082,6 +1130,29 @@ tr:hover td,tr.hl td{background:var(--sel)}
       </div>
 
       <div class="drawbar" id="drawbar" hidden aria-live="polite"></div>
+      <div class="coordpanel" id="coordPanel" hidden role="dialog" aria-labelledby="cpTitle">
+        <div class="cp-head"><h2 id="cpTitle">Add by coordinates</h2><button class="ibtn" id="cpClose" type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+        <div class="cp-body">
+          <div class="cp-types" id="cpTypes" role="group" aria-label="What to add"></div>
+          <p class="small" id="cpHint"></p>
+          <div class="cp-sym" id="cpSym" hidden><span class="sw"></span><span class="st"></span><button class="btn ghost sm" id="cpSymBtn" type="button">Change symbol</button></div>
+          <label class="cp-lbl" for="cpText">Coordinates</label>
+          <textarea id="cpText" rows="6" spellcheck="false" autocomplete="off" autocapitalize="characters" placeholder="35V LG 85442 70631&#10;OP North 35VLG8600071000&#10;60.1699, 24.9384&#10;595620N 0251653E&#10;60°10'12&quot;N 24°56'18&quot;E"></textarea>
+          <div class="cp-row">
+            <button class="btn ghost sm" id="cpFileBtn" type="button">Load from file</button>
+            <input type="file" id="cpFile" accept=".txt,.csv,.tsv,.geojson,.json,text/plain,text/csv" hidden>
+            <label><input type="checkbox" id="cpLonFirst"> Decimal pairs are lon, lat</label>
+          </div>
+          <div class="cp-radius" id="cpRadiusRow" hidden><label for="cpR">Radius</label><input type="number" id="cpR" min="0" step="any" inputmode="decimal"><select id="cpRU" aria-label="Radius unit"><option value="1">m</option><option value="1000" selected>km</option><option value="1852">NM</option></select></div>
+          <div class="two" style="margin-top:.7rem">
+            <label><span>Name</span><input type="text" id="cpName" maxlength="80"></label>
+            <label id="cpLayerWrap"><span>Layer</span><select id="cpLayer"></select></label>
+          </div>
+          <p class="cp-result" id="cpResult" aria-live="polite"></p>
+          <ol class="cp-list" id="cpList"></ol>
+        </div>
+        <div class="cp-foot"><button class="btn" id="cpAdd" type="button">Add to map</button><button class="btn ghost" id="cpZoom" type="button">Zoom to preview</button><button class="btn ghost" id="cpCancel" type="button">Cancel</button></div>
+      </div>
       <button class="readout" id="readout" type="button" title="Copy this coordinate"><b>&nbsp;</b><span>&nbsp;</span></button>
       <div id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastAct" hidden></button></div>
     </div>
@@ -1228,15 +1299,6 @@ function fromMGRS(str){
   const r = fromUTM(zone, x, y, latMin < 0);
   if (!isFinite(r.lat) || !isFinite(r.lon)) return null;
   return { lat: r.lat, lon: r.lon, precision: unit };
-}
-function parseCoord(q){
-  const t = q.trim(); if (!t) return null;
-  const g = fromMGRS(t); if (g) return { lat:g.lat, lon:g.lon, label:"MGRS " + t.toUpperCase().replace(/\s+/g," ") };
-  let m = /^(-?\d{1,2}(?:\.\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:\.\d+)?)$/.exec(t);
-  if (m){ const lat = +m[1], lon = +m[2]; if (Math.abs(lat) <= 90 && Math.abs(lon) <= 180) return { lat, lon, label: lat.toFixed(5) + ", " + lon.toFixed(5) }; }
-  m = /^(\d{6})N\s*(\d{7})E$/i.exec(t);
-  if (m){ const c = parseDMS(m[1] + "N " + m[2] + "E"); return { lat:c.lat, lon:c.lon, label: t.toUpperCase() }; }
-  return null;
 }
 const RAD = Math.PI/180, R_E = 6371008.8;
 function dist(a, b){
@@ -1424,18 +1486,21 @@ function goTo(t){
   map.setView(ll, Math.max(map.getZoom(), 13));
   setTimeout(() => gotoMarker && gotoMarker.openPopup(), 300);
 }
+function setHash(h){
+  try { history.replaceState(null, "", h ? "#" + h : location.pathname + location.search); } catch(e){ /* blocked in sandboxed previews */ }
+}
 function areaMGRS(a, i){ return mgrs(a.ll[i]); }
 function selectArea(id, fromHash){
   const a = AREAS.find(x => x.id === id); if (!a) return;
   AS.sel = id;
   renderAreaList(); renderAreaDetail();
   drawSelection(a);
-  if (!fromHash) history.replaceState(null, "", "#" + id);
+  if (!fromHash) setHash(id);
 }
 function closeArea(){
   AS.sel = null; selGroup.clearLayers(); selMarkers = [];
   $("detail").hidden = true; $("areaList").hidden = false;
-  history.replaceState(null, "", location.pathname + location.search);
+  setHash("");
   renderAreaList();
 }
 function renderAreaDetail(){
@@ -1613,6 +1678,7 @@ function renderSymPreview(){
   } else eb.hidden = true;
   $("placeSym").hidden = !!symEditId;
   if (tool === "symbol") updateDrawbar();
+  if (typeof CP !== "undefined" && CP.open) cpSymRow();
 }
 function symChanged(full){
   S.sym = Object.assign({}, SYM); save();
@@ -1802,6 +1868,7 @@ function popupFor(fid){
   if (f.kind === "symbol") mk("Edit symbol", "ghost", () => {
     SYM = Object.assign({}, SYM_DEF, f.sym); symEditId = f.id; map.closePopup(); renderSymPicker(); showTab("symbols", true);
   });
+  mk("Edit coordinates", "ghost", () => editCoords(f.id));
   mk("Delete", "danger", () => deleteFeature(f.id));
   box.appendChild(btns);
   return box;
@@ -2216,6 +2283,7 @@ function updateDrawbar(){
     h += metricHTML([[fmtDist(w) + " × " + fmtDist(hgt), "width × height"], [fmtArea(w*hgt), "area"]]);
   }
   if (isCoarse()) btns.unshift(["center", "Add at crosshair", ""]);
+  if (tool !== "measure") btns.push(["coords", "Type coordinates", ""]);
   const hasDraft = draft && draft.pts.length;
   if ((tool === "line" || tool === "polygon" || tool === "circle" || tool === "rect") && hasDraft) btns.push(["undo", "Undo point", ""]);
   if (tool === "measure" && measure && measure.pts.length) btns.push(["undo", "Undo point", ""]);
@@ -2244,6 +2312,10 @@ $("drawbar").addEventListener("click", e => {
   else if (a === "cancel") cancelDraft();
   else if (a === "center") onMapClick(map.getCenter());
   else if (a === "change") showTab("symbols", true);
+  else if (a === "coords"){
+    const k = tool, d = draft;
+    openCoordPanel(k, { text: d && d.pts.length ? d.pts.map(mgrs10).join("\n") : "", r: k === "circle" ? (d && d.rTyped) || 0 : undefined });
+  }
   else if (a === "saveline" && measure && measure.pts.length === 2){
     addFeature({ kind:"line", name:autoName("line"), pts: measure.pts.map(P) });
     measure = { pts:[] }; measureLayer.clearLayers(); updateDrawbar();
@@ -2266,6 +2338,7 @@ map.on("move", () => { if (isCoarse()){ updateReadout(); if (tool !== "pan") ref
 document.addEventListener("keydown", e => {
   const tag = (e.target.tagName || "").toLowerCase();
   if (tag === "input" || tag === "select" || tag === "textarea") return;
+  if (e.key === "Escape" && CP.open){ closeCoordPanel(); return; }
   if (e.key === "Escape"){ if (draft && draft.pts.length) cancelDraft(); else if (tool !== "pan") setTool("pan"); else map.closePopup(); }
   else if (e.key === "Enter" && draft) finish();
   else if ((e.key === "Backspace" || (e.key === "z" && (e.ctrlKey || e.metaKey))) && tool !== "pan"){ e.preventDefault(); undoPoint(); }
@@ -2357,6 +2430,339 @@ $("panel").addEventListener("transitionend", e => { if (e.propertyName === "heig
   [$("grip"), document.querySelector(".tabs")].forEach(el => { el.addEventListener("touchstart", start, { passive:true }); el.addEventListener("touchend", end); });
 })();
 window.addEventListener("resize", () => { map.invalidateSize(); updateDrawbar(); });
+
+/* ================= coordinate parsing ================= */
+// Reads one line of text and returns every coordinate found in it.
+// Accepts MGRS (spaced or compact), compact DMS like the source data (595620N 0251653E),
+// degree-symbol DMS (60°10'12"N 24°56'18"E, N 60° 10.5' E 24° 56.3') and decimal pairs (60.1699, 24.9384 or 60,1699; 24,9384).
+const MGRS_RE = /(^|[^0-9A-Z])(\d{1,2})\s?([C-HJ-NP-X])\s?([A-HJ-NP-Z])([A-HJ-NP-V])(?:\s?(\d{2,10})(?:\s+(\d{1,5}))?)?(?![0-9A-Z])/gi;
+const CDMS_RE = /(\d{2})(\d{2})(\d{2}(?:[.,]\d+)?)\s?([NS])[\s,;]*(\d{3})(\d{2})(\d{2}(?:[.,]\d+)?)\s?([EW])/gi;
+const NUMV = s => parseFloat(String(s).replace(",", "."));
+function cleanName(s){
+  return s.replace(/\s+/g, " ").replace(/^[\s,;:|\-–—#]+|[\s,;:|\-–—]+$/g, "").replace(/^["']+|["']+$/g, "").trim();
+}
+function cutSpans(line, spans){
+  let out = "", pos = 0;
+  spans.sort((a, b) => a[0] - b[0]).forEach(([s, e]) => { out += line.slice(pos, s) + " "; pos = e; });
+  return out + line.slice(pos);
+}
+function parseLine(line, lonFirst){
+  const found = [], spans = [];
+  // 1. MGRS
+  MGRS_RE.lastIndex = 0; let m;
+  while ((m = MGRS_RE.exec(line))){
+    let digits = m[6] || "", end = m.index + m[0].length;
+    if (m[7]){
+      if (m[7].length === digits.length) digits += m[7];
+      else { end -= m[7].length; while (end > 0 && /\s/.test(line[end-1])) end--; MGRS_RE.lastIndex = end; }
+    }
+    const start = m.index + m[1].length;
+    const g = fromMGRS(m[2] + m[3] + m[4] + m[5] + digits);
+    if (!g) return { error: "“" + line.slice(start, end).trim() + "” is not a valid MGRS grid" };
+    found.push(L.latLng(g.lat, g.lon)); spans.push([start, end]);
+  }
+  // 2. compact DMS
+  if (!found.length){
+    CDMS_RE.lastIndex = 0;
+    while ((m = CDMS_RE.exec(line))){
+      let lat = +m[1] + +m[2]/60 + NUMV(m[3])/3600, lon = +m[5] + +m[6]/60 + NUMV(m[7])/3600;
+      if (/s/i.test(m[4])) lat = -lat; if (/w/i.test(m[8])) lon = -lon;
+      found.push(L.latLng(lat, lon)); spans.push([m.index, m.index + m[0].length]);
+    }
+  }
+  // 3. degree-symbol DMS
+  if (!found.length && /°/.test(line)){
+    const pre = /^[\s"']*[NSEW]/i.test(line);
+    const re = pre
+      ? /([NSEW])\s*(\d{1,3}(?:[.,]\d+)?)\s*°\s*(?:(\d{1,2}(?:[.,]\d+)?)\s*['′’]\s*)?(?:(\d{1,2}(?:[.,]\d+)?)\s*(?:["″”]|''))?/gi
+      : /()(\d{1,3}(?:[.,]\d+)?)\s*°\s*(?:(\d{1,2}(?:[.,]\d+)?)\s*['′’]\s*)?(?:(\d{1,2}(?:[.,]\d+)?)\s*(?:["″”]|'')\s*)?([NSEW])?/gi;
+    const parts = [];
+    while ((m = re.exec(line))){
+      const v = NUMV(m[2]) + (m[3] ? NUMV(m[3])/60 : 0) + (m[4] ? NUMV(m[4])/3600 : 0);
+      parts.push({ v, h: (m[1] || m[5] || "").toUpperCase(), s: m.index, e: m.index + m[0].length });
+    }
+    for (let i = 0; i + 1 < parts.length; i += 2){
+      let a = parts[i], b = parts[i+1];
+      if (/[EW]/.test(a.h) || /[NS]/.test(b.h)){ const t = a; a = b; b = t; }
+      const lat = /S/.test(a.h) ? -a.v : a.v, lon = /W/.test(b.h) ? -b.v : b.v;
+      if (Math.abs(lat) > 90 || Math.abs(lon) > 180) return { error: "Degrees out of range in “" + line.trim() + "”" };
+      found.push(L.latLng(lat, lon)); spans.push([parts[i].s, parts[i].e], [parts[i+1].s, parts[i+1].e]);
+    }
+  }
+  // 4. decimal pair
+  if (!found.length){
+    const dot = /\d\.\d/.test(line);
+    const nums = [...line.matchAll(dot ? /-?\d+(?:\.\d+)?/g : /-?\d+(?:,\d+)?/g)];
+    const hasDec = n => /[.,]/.test(n[0]);
+    for (let i = 0; i + 1 < nums.length; i++){
+      const a = nums[i], b = nums[i+1];
+      const gap = line.slice(a.index + a[0].length, b.index);
+      if (!/^[\s,;\/|]*$/.test(gap)) continue;
+      if (!(hasDec(a) && hasDec(b)) && nums.length !== 2) continue;
+      let lat = NUMV(a[0]), lon = NUMV(b[0]);
+      if (lonFirst){ const t = lat; lat = lon; lon = t; }
+      if (Math.abs(lat) > 90 && Math.abs(lon) <= 90){ const t = lat; lat = lon; lon = t; }
+      if (Math.abs(lat) > 90 || Math.abs(lon) > 180) continue;
+      found.push(L.latLng(lat, lon)); spans.push([a.index, b.index + b[0].length]);
+      break;
+    }
+  }
+  if (!found.length) return null;
+  const name = found.length === 1 ? cleanName(cutSpans(line, spans)) : "";
+  return { pts: found, name };
+}
+function parseText(text, lonFirst){
+  const items = [], errors = []; let skipped = 0;
+  String(text).split(/\r?\n/).forEach((raw, i) => {
+    const line = raw.trim();
+    if (!line || line.startsWith("#") || line.startsWith("//")){ if (line) skipped++; return; }
+    if (!/\d/.test(line)){ skipped++; return; } // headers such as "name,lat,lon"
+    const r = parseLine(line, lonFirst);
+    if (!r){ errors.push({ n:i+1, text:line, why:"no coordinate found" }); return; }
+    if (r.error){ errors.push({ n:i+1, text:line, why:r.error }); return; }
+    r.pts.forEach(p => items.push({ n:i+1, ll:p, name: r.name }));
+  });
+  return { items, errors, skipped };
+}
+function parseCoord(q){
+  const t = q.trim(); if (!t || !/\d/.test(t)) return null;
+  const r = parseText(t, false);
+  if (r.items.length === 1 && !r.errors.length){ const it = r.items[0]; return { lat:it.ll.lat, lon:it.ll.lng, label:t }; }
+  return null;
+}
+const mgrs10 = ll => (ll.lat > 84 || ll.lat < -80) ? ll.lat.toFixed(6) + ", " + ll.lng.toFixed(6) : toMGRS(ll.lat, ll.lng, 5, true);
+
+/* ================= coordinate entry panel ================= */
+const CP = { open:false, kind:"point", edit:null, parsed:null, geo:null, layer:null };
+const CP_KINDS = [["point","Points"],["symbol","Symbols"],["line","Line"],["polygon","Polygon"],["circle","Circle"],["rect","Rectangle"]];
+const CP_HINT = {
+  point:"One coordinate per line. Each line becomes a point. Text before or after a coordinate becomes its name.",
+  symbol:"One coordinate per line. Each line becomes a symbol. Text before or after a coordinate becomes its name.",
+  line:"At least 2 coordinates, one per line, in order.",
+  polygon:"At least 3 corners, one per line, in order. The shape closes itself.",
+  circle:"The center coordinate, and the radius below.",
+  rect:"Two opposite corners, one per line."
+};
+const cpLayer = L.layerGroup().addTo(map);
+(function buildCP(){
+  const box = $("cpTypes");
+  CP_KINDS.forEach(([k, label]) => {
+    const b = document.createElement("button"); b.type = "button"; b.dataset.k = k;
+    b.innerHTML = svgI(KIND_ICON[k]) + "<span></span>"; b.lastChild.textContent = label;
+    b.onclick = () => { if (CP.edit) return; CP.kind = k; cpRender(); };
+    box.appendChild(b);
+  });
+})();
+function openCoordPanel(kind, opts){
+  opts = opts || {};
+  setTool("pan"); map.closePopup();
+  $("mapMenu").hidden = true;
+  if (CP.edit && !opts.edit){ $("cpText").value = ""; $("cpName").value = ""; $("cpR").value = ""; }
+  CP.edit = opts.edit || null;
+  if (kind) CP.kind = kind;
+  if (opts.text !== undefined) $("cpText").value = opts.text;
+  if (opts.name !== undefined) $("cpName").value = opts.name;
+  if (opts.r !== undefined){
+    const r = opts.r || 0;
+    $("cpRU").value = r && r < 1000 ? "1" : "1000";
+    $("cpR").value = r ? +(r / +$("cpRU").value).toFixed(3) : "";
+  }
+  CP.layer = S.active;
+  CP.open = true;
+  if (isMobile()) setSheet(false);
+  $("coordPanel").hidden = false;
+  cpRender();
+  if (opts.zoom) cpZoom();
+  if (!isCoarse()) setTimeout(() => $("cpText").focus(), 30);
+}
+function closeCoordPanel(){
+  CP.open = false; $("coordPanel").hidden = true; cpLayer.clearLayers();
+  if (CP.edit){ CP.edit = null; $("cpText").value = ""; $("cpName").value = ""; $("cpR").value = ""; }
+}
+function cpRender(){
+  const hit = CP.edit ? findFeat(CP.edit) : null;
+  if (CP.edit && !hit){ CP.edit = null; }
+  $("cpTitle").textContent = hit ? "Edit coordinates" : "Add by coordinates";
+  document.querySelectorAll("#cpTypes button").forEach(b => {
+    b.setAttribute("aria-pressed", b.dataset.k === CP.kind ? "true" : "false");
+    b.disabled = !!hit && b.dataset.k !== CP.kind;
+  });
+  $("cpHint").textContent = hit ? "Change the coordinates of " + hit.f.name + ". " + (CP.kind === "point" || CP.kind === "symbol" ? "Enter one coordinate." : CP_HINT[CP.kind])
+                                : CP_HINT[CP.kind];
+  $("cpRadiusRow").hidden = CP.kind !== "circle";
+  $("cpLayerWrap").hidden = !!hit;
+  $("cpFileBtn").hidden = !!hit;
+  const sel = $("cpLayer"); sel.innerHTML = "";
+  S.layers.forEach(l => { const o = document.createElement("option"); o.value = l.id; o.textContent = l.name; sel.appendChild(o); });
+  if (!layerOf(CP.layer)) CP.layer = S.active;
+  sel.value = CP.layer;
+  $("cpName").placeholder = (CP.kind === "point" || CP.kind === "symbol") && !hit ? "Optional, used when a line has no name" : "Optional";
+  cpSymRow();
+  $("cpAdd").textContent = hit ? "Save coordinates" : "Add to map";
+  cpUpdate();
+}
+function cpSymRow(){
+  const row = $("cpSym");
+  row.hidden = CP.kind !== "symbol" || !!CP.edit;
+  if (row.hidden) return;
+  const r = symRender(SYM, 30);
+  row.querySelector(".sw").innerHTML = r.svg;
+  row.querySelector(".st").textContent = symTitle(SYM);
+}
+function cpRadius(){ const v = NUMV($("cpR").value); return v > 0 ? v * +$("cpRU").value : 0; }
+function cpCount(n, w){ return n + " " + w + (n === 1 ? "" : "s"); }
+function cpUpdate(){
+  const text = $("cpText").value, res = $("cpResult"), list = $("cpList");
+  CP.geo = null;
+  cpLayer.clearLayers(); list.innerHTML = ""; res.className = "cp-result";
+  const t = text.trim();
+  if (!t){ CP.parsed = null; res.textContent = "Paste or type coordinates to see them on the map."; $("cpAdd").disabled = true; return; }
+  if (t[0] === "{" && !CP.edit){
+    try { const d = JSON.parse(t); const n = d.features ? d.features.length : 1;
+      CP.geo = d; res.textContent = "This is GeoJSON with " + cpCount(n, "feature") + ". Add imports it as its own layers."; $("cpAdd").disabled = false; return;
+    } catch(e){ res.textContent = "This looks like GeoJSON but it is not valid JSON."; res.className = "cp-result bad"; $("cpAdd").disabled = true; return; }
+  }
+  const p = CP.parsed = parseText(text, $("cpLonFirst").checked);
+  const pts = p.items.map(i => i.ll);
+  const k = CP.kind, color = (layerOf(CP.edit ? findFeat(CP.edit).l.id : CP.layer) || activeLayer()).color;
+  // validation
+  let msg = cpCount(pts.length, "coordinate") + " read", bad = "", extra = "";
+  const need = { line:2, polygon:3, circle:1, rect:2 }[k];
+  if ((k === "point" || k === "symbol") && CP.edit && pts.length !== 1) bad = "Enter exactly one coordinate.";
+  else if (need && pts.length < need) bad = k === "circle" ? "Enter the center coordinate." : "Enter at least " + need + " coordinates.";
+  else if (k === "circle" && pts.length > 1) bad = "Enter only the center coordinate.";
+  else if (k === "rect" && pts.length > 2) bad = "Enter only two opposite corners.";
+  else if (k === "circle" && !cpRadius()) bad = "Enter the radius.";
+  else if (k === "rect" && (pts[0].lat === pts[1].lat || pts[0].lng === pts[1].lng)) bad = "The corners must differ in both directions.";
+  if (!bad){
+    if (k === "line") extra = "Length " + fmtDist(pathLen(pts)) + " (" + fmtNM(pathLen(pts)) + ").";
+    if (k === "polygon") extra = "Area " + fmtArea(ringArea(pts)) + ", perimeter " + fmtDist(pathLen(pts, true)) + ".";
+    if (k === "circle") extra = "Radius " + fmtDist(cpRadius()) + ", area " + fmtArea(Math.PI * cpRadius()**2) + ".";
+    if (k === "rect"){ const a = pts[0], b = pts[1]; extra = fmtDist(dist(a, L.latLng(a.lat, b.lng))) + " × " + fmtDist(dist(a, L.latLng(b.lat, a.lng))) + "."; }
+  }
+  if (p.errors.length) msg += ". " + cpCount(p.errors.length, "line") + " could not be read";
+  res.textContent = msg + ". " + (bad || extra);
+  if (bad || p.errors.length) res.className = "cp-result bad";
+  $("cpAdd").disabled = !!bad || !pts.length;
+  // list
+  const rows = [];
+  p.items.slice(0, 300).forEach((it, i) => rows.push({ n:it.n, ok:true, a:mgrs10(it.ll), b:it.name, i }));
+  p.errors.slice(0, 100).forEach(er => rows.push({ n:er.n, ok:false, a:er.why === "no coordinate found" ? "No coordinate in “" + er.text.slice(0, 60) + "”" : er.why }));
+  rows.sort((x, y) => x.n - y.n);
+  rows.forEach(r => {
+    const li = document.createElement("li");
+    li.innerHTML = '<span class="ln"></span><span class="v"></span>' + (r.b ? '<span class="nm"></span>' : "");
+    li.querySelector(".ln").textContent = "Line " + r.n;
+    li.querySelector(".v").textContent = r.a; if (!r.ok) li.querySelector(".v").className = "v err";
+    if (r.b) li.querySelector(".nm").textContent = r.b;
+    if (r.ok) { li.title = "Show on the map"; li.onclick = () => map.setView(p.items[r.i].ll, Math.max(map.getZoom(), 13)); }
+    list.appendChild(li);
+  });
+  // preview
+  if (!pts.length) return;
+  const dash = { color, weight:3, dashArray:"7 5", interactive:false };
+  if (k === "line" && pts.length > 1) L.polyline(pts, dash).addTo(cpLayer);
+  if (k === "polygon" && pts.length > 2) L.polygon(pts, Object.assign({ fillColor:color, fillOpacity:.14 }, dash)).addTo(cpLayer);
+  if (k === "circle" && cpRadius()) L.circle(pts[0], Object.assign({ radius:cpRadius(), fillColor:color, fillOpacity:.14 }, dash)).addTo(cpLayer);
+  if (k === "rect" && pts.length === 2) L.rectangle(L.latLngBounds(pts[0], pts[1]), Object.assign({ fillColor:color, fillOpacity:.14 }, dash)).addTo(cpLayer);
+  pts.forEach((q, i) => {
+    const mk = L.circleMarker(q, { radius:5, color, weight:2.5, fillColor:"#fff", fillOpacity:1, interactive:false }).addTo(cpLayer);
+    if (pts.length <= 40 && pts.length > 1) mk.bindTooltip(String(i+1), { permanent:true, direction:"right", offset:[6,0], className:"cpnum" });
+  });
+}
+function cpBounds(){
+  const b = L.latLngBounds([]);
+  cpLayer.eachLayer(l => { if (l.getBounds) b.extend(l.getBounds()); else if (l.getLatLng) b.extend(l.getLatLng()); });
+  return b;
+}
+function cpZoom(){
+  const b = cpBounds(); if (!b.isValid()) return;
+  const r = $("coordPanel").getBoundingClientRect();
+  const pad = isMobile() ? { paddingTopLeft:[24, 70], paddingBottomRight:[24, r.height + 24] }
+                         : { paddingTopLeft:[90, 30], paddingBottomRight:[r.width + 90, 30] };
+  map.fitBounds(b, Object.assign({ maxZoom:15 }, pad));
+}
+function cpCommit(){
+  if (CP.geo){ importGeoJSON(CP.geo, "Pasted"); $("cpText").value = ""; closeCoordPanel(); return; }
+  const p = CP.parsed; if (!p || !p.items.length) return;
+  const pts = p.items.map(i => i.ll), k = CP.kind, nm = $("cpName").value.trim();
+  if (CP.edit){
+    const hit = findFeat(CP.edit); if (!hit) { closeCoordPanel(); return; }
+    const f = hit.f;
+    if (k === "circle"){ f.pts = [P(pts[0])]; f.r = Math.round(cpRadius()*10)/10; }
+    else if (k === "point" || k === "symbol") f.pts = [P(pts[0])];
+    else f.pts = pts.map(P);
+    if (nm) f.name = nm;
+    save(); renderLayer(hit.l); renderLayersPanel();
+    const id = f.id; toast("Updated " + f.name);
+    closeCoordPanel();
+    zoomToFeature(id, true);
+    return;
+  }
+  const prev = S.active; S.active = CP.layer || S.active;
+  const added = [];
+  if (k === "point" || k === "symbol"){
+    p.items.forEach((it, i) => {
+      const name = it.name || (nm ? (p.items.length > 1 ? nm + " " + (i+1) : nm) : "");
+      if (k === "point") added.push(addFeature({ kind:"point", name: name || autoName("point"), pts:[P(it.ll)] }, true));
+      else { const sym = Object.assign({}, SYM); added.push(addFeature({ kind:"symbol", name: name || symName(sym), pts:[P(it.ll)], sym }, true)); }
+    });
+  } else if (k === "line" || k === "polygon") added.push(addFeature({ kind:k, name: nm || autoName(k), pts: pts.map(P) }, true));
+  else if (k === "circle") added.push(addFeature({ kind:"circle", name: nm || autoName("circle"), pts:[P(pts[0])], r: Math.round(cpRadius()*10)/10 }, true));
+  else if (k === "rect") added.push(addFeature({ kind:"rect", name: nm || autoName("rect"), pts:[P(pts[0]), P(pts[1])] }, true));
+  const l = activeLayer();
+  if (CP.layer !== prev){ S.active = CP.layer; save(); renderLayersPanel(); }
+  toast(added.length === 1 ? added[0].name + " saved to " + l.name : "Added " + added.length + " items to " + l.name);
+  $("cpText").value = ""; $("cpName").value = "";
+  closeCoordPanel();
+  const b = L.latLngBounds([]);
+  added.forEach(f => { const o = objs[f.id]; if (!o) return; if (o.getBounds) b.extend(o.getBounds()); else b.extend(o.getLatLng()); });
+  if (b.isValid()) map.fitBounds(b, Object.assign({ maxZoom:14 }, fitPad()));
+}
+function featCoordText(f){
+  if (f.kind === "rect"){ const c = rectCorners(f); return [mgrs10(c[3]), mgrs10(c[1])].join("\n"); }
+  return f.pts.map(p => mgrs10(LL(p))).join("\n");
+}
+function editCoords(fid){
+  const hit = findFeat(fid); if (!hit) return;
+  const f = hit.f;
+  openCoordPanel(f.kind, { edit: fid, text: featCoordText(f), name: f.name, r: f.kind === "circle" ? f.r : undefined, zoom: true });
+}
+let cpTimer = 0;
+$("cpText").addEventListener("input", () => { clearTimeout(cpTimer); cpTimer = setTimeout(cpUpdate, 150); });
+$("cpText").addEventListener("paste", () => setTimeout(() => { cpUpdate(); cpZoom(); }, 30));
+$("cpLonFirst").onchange = cpUpdate;
+$("cpR").addEventListener("input", cpUpdate);
+$("cpRU").onchange = cpUpdate;
+$("cpLayer").onchange = e => { CP.layer = e.target.value; cpUpdate(); };
+$("cpAdd").onclick = cpCommit;
+$("cpZoom").onclick = cpZoom;
+$("cpCancel").onclick = closeCoordPanel;
+$("cpClose").onclick = closeCoordPanel;
+$("cpSymBtn").onclick = () => { showTab("symbols", true); if (isMobile()) closeCoordPanel(); };
+$("coordPanel").addEventListener("keydown", e => {
+  if (e.key === "Escape"){ e.stopPropagation(); closeCoordPanel(); }
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !$("cpAdd").disabled){ e.preventDefault(); cpCommit(); }
+});
+$("cpFileBtn").onclick = () => $("cpFile").click();
+$("cpFile").onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    const txt = String(rd.result);
+    e.target.value = "";
+    if (/\.(geo)?json$/i.test(file.name) || txt.trim()[0] === "{"){
+      try { importGeoJSON(JSON.parse(txt), file.name.replace(/\.[^.]+$/, "")); closeCoordPanel(); }
+      catch(err){ toast("Could not read " + file.name + " as GeoJSON."); }
+      return;
+    }
+    $("cpText").value = txt; cpUpdate(); cpZoom();
+    toast("Loaded " + file.name);
+  };
+  rd.readAsText(file);
+};
+$("cpOpen").onclick = () => openCoordPanel(null);
+$("symCoords").onclick = () => openCoordPanel("symbol");
 
 /* ================= start ================= */
 $("setPrec").value = String(S.digits); $("setFmt").value = S.spaced ? "1" : "0";
