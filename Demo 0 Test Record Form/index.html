@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Demo 0 – Test Record Form</title>
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #f4f1ea;
+  --card: #fffdf8;
+  --ink: #1d2327;
+  --muted: #5d676d;
+  --line: #d9d3c4;
+  --accent: #0b5d6b;
+  --accent-ink: #ffffff;
+  --pass: #1f7a3f;
+  --partial: #a86a00;
+  --fail: #b3261e;
+  --chip: #ece7d9;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14181a; --card: #1c2225; --ink: #e8eaea; --muted: #9aa5ab;
+    --line: #333d42; --accent: #4fb3c4; --accent-ink: #0c1b1e;
+    --pass: #5cc783; --partial: #e0a23c; --fail: #ff8a80; --chip: #263034;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14181a; --card: #1c2225; --ink: #e8eaea; --muted: #9aa5ab;
+  --line: #333d42; --accent: #4fb3c4; --accent-ink: #0c1b1e;
+  --pass: #5cc783; --partial: #e0a23c; --fail: #ff8a80; --chip: #263034;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 16px; line-height: 1.45;
+}
+main { max-width: 860px; margin: 0 auto; padding: 20px 16px 48px; }
+header h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+header p { margin: 0; color: var(--muted); }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+  padding: 18px; margin-top: 18px;
+}
+h2 { font-size: 1.1rem; margin: 0 0 12px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+.full { grid-column: 1 / -1; }
+label, .lbl { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 5px; }
+.hint { font-weight: 400; color: var(--muted); }
+input[type=text], input[type=date], input[type=number], select, textarea {
+  width: 100%; padding: 9px 10px; font: inherit; color: var(--ink);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 7px;
+}
+textarea { min-height: 84px; resize: vertical; }
+input:focus, select:focus, textarea:focus, button:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 1px;
+}
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opt {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--chip);
+  font-weight: 500; cursor: pointer; user-select: none;
+}
+.opt input { margin: 0; accent-color: var(--accent); }
+button {
+  font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+}
+button.ghost { background: transparent; color: var(--accent); }
+button.small { padding: 4px 10px; font-size: 0.8rem; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 16px; }
+.msg { color: var(--muted); font-size: 0.9rem; }
+.msg.err { color: var(--fail); }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.stat { padding: 6px 12px; border-radius: 8px; background: var(--chip); font-weight: 600; font-size: 0.9rem; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; align-items: end; }
+.toolbar > div { min-width: 130px; flex: 1; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 640px; }
+th, td { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+.res { font-weight: 700; }
+.res.Pass { color: var(--pass); } .res.Partial { color: var(--partial); } .res.Fail { color: var(--fail); }
+.sev-Blocker, .sev-Major { color: var(--fail); font-weight: 600; }
+.ghostlabel { display:inline-block; margin:0; font:inherit; font-weight:600; padding:10px 18px; border-radius:8px; cursor:pointer; border:1px solid var(--accent); color:var(--accent); }
+.empty { color: var(--muted); padding: 14px 4px; }
+.note { color: var(--muted); font-size: 0.85rem; margin-top: 4px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Demo 0 – Test Record Form</h1>
+    <p>Fill in one record per test run, as in section 2 of the test plan. Records are saved in this browser only. Use Export JSON to share them and Import JSON to merge a teammate's file.</p>
+  </header>
+
+  <section class="card" aria-labelledby="formh">
+    <h2 id="formh">New test record</h2>
+    <div id="storageMsg" class="msg err" hidden>This browser blocks local storage, so records will be lost when you close the page. Export JSON often.</div>
+    <div id="formArea">
+      <div class="grid">
+        <div>
+          <label for="testId">Test</label>
+          <select id="testId">
+            <option value="">Choose…</option>
+            <option>T1 – Site setup and safety</option>
+            <option>T2 – Single platform check</option>
+            <option>T3 – Network coverage</option>
+            <option>T4 – Data pipeline</option>
+            <option>T5 – Multi-platform run</option>
+            <option>T6 – VR interface</option>
+            <option>T7 – Data collection</option>
+            <option>T8 – Failure handling</option>
+            <option>T9 – Dress rehearsal</option>
+            <option>D1 – Start-up check</option>
+            <option>D2 – Demo run</option>
+            <option>D3 – Data collection (demo day)</option>
+          </select>
+        </div>
+        <div>
+          <label for="date">Date</label>
+          <input type="date" id="date">
+        </div>
+        <div>
+          <label for="run">Run number</label>
+          <input type="number" id="run" min="1" step="1" value="1">
+        </div>
+        <div>
+          <label for="by">Recorded by</label>
+          <input type="text" id="by" autocomplete="name">
+        </div>
+        <div class="full">
+          <span class="lbl">Platforms involved</span>
+          <div class="opts" id="platforms"></div>
+        </div>
+        <div>
+          <label for="versions">Software versions <span class="hint">(optional)</span></label>
+          <input type="text" id="versions">
+        </div>
+        <div>
+          <label for="weather">Weather <span class="hint">(wind, rain, temperature)</span></label>
+          <input type="text" id="weather">
+        </div>
+        <div class="full">
+          <span class="lbl">Result</span>
+          <div class="opts" id="results"></div>
+        </div>
+        <div>
+          <label for="severity">Highest issue severity</label>
+          <select id="severity">
+            <option>None</option><option>Minor</option><option>Major</option><option>Blocker</option>
+          </select>
+        </div>
+        <div>
+          <label for="evidence">Evidence file names <span class="hint">(logs, video, photos)</span></label>
+          <input type="text" id="evidence">
+        </div>
+        <div class="full">
+          <label for="notes">Notes <span class="hint">(criterion met? deviations, issues, retest of which run)</span></label>
+          <textarea id="notes"></textarea>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="submit" type="button">Save record</button>
+        <button id="clear" type="button" class="ghost">Clear form</button>
+        <span id="formMsg" class="msg" role="status"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="listh">
+    <h2 id="listh">Records</h2>
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <div>
+        <label for="fTest">Test</label>
+        <select id="fTest"><option value="">All tests</option></select>
+      </div>
+      <div>
+        <label for="fRes">Result</label>
+        <select id="fRes">
+          <option value="">All results</option><option>Pass</option><option>Partial</option><option>Fail</option>
+        </select>
+      </div>
+      <div style="flex:0 0 auto; display:flex; gap:8px; flex-wrap:wrap">
+        <button id="csv" type="button" class="ghost">Export CSV</button>
+        <button id="json" type="button" class="ghost">Export JSON</button>
+        <label class="ghostlabel" for="import">Import JSON</label>
+        <input type="file" id="import" accept="application/json,.json" hidden>
+      </div>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Test</th><th>Run</th><th>Result</th><th>Issue</th><th>By</th><th></th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div id="empty" class="empty" hidden>No records yet.</div>
+    <div id="listMsg" class="msg err" role="status"></div>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var PLATFORMS = ["DR1 (ArduPilot)", "Parrot Anafi AI", "Autel Evo Max 4N",
+                   "PROVIDER (PTI Robotics)", "Laykka X.3P #1", "Laykka X.3P #2"];
+  var RESULTS = ["Pass", "Partial", "Fail"];
+  var KEY = "demo0-test-records-v1";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var records = [];
+  var pendingDelete = null;
+  var storageOk = true;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function fmtDate(iso) {
+    var p = (iso || "").split("-");
+    return p.length === 3 ? Number(p[2]) + "." + Number(p[1]) + "." + p[0] : (iso || "");
+  }
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+
+  /* ---------- storage (this browser only) ---------- */
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      records = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(records)) records = [];
+    } catch (e) { records = []; storageOk = false; }
+  }
+  function persist() {
+    try { localStorage.setItem(KEY, JSON.stringify(records)); storageOk = true; }
+    catch (e) { storageOk = false; }
+    $("storageMsg").hidden = storageOk;
+  }
+  function sortRecords() {
+    records.sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+  }
+
+  /* ---------- form ---------- */
+  function buildOptions() {
+    var pBox = $("platforms");
+    PLATFORMS.forEach(function (name) {
+      var l = el("label", "opt");
+      var cb = document.createElement("input");
+      cb.type = "checkbox"; cb.value = name; cb.name = "platform";
+      l.appendChild(cb); l.appendChild(document.createTextNode(name));
+      pBox.appendChild(l);
+    });
+    var rBox = $("results");
+    RESULTS.forEach(function (name) {
+      var l = el("label", "opt");
+      var rb = document.createElement("input");
+      rb.type = "radio"; rb.name = "result"; rb.value = name;
+      l.appendChild(rb); l.appendChild(document.createTextNode(name));
+      rBox.appendChild(l);
+    });
+    var sel = $("testId"), f = $("fTest");
+    Array.prototype.slice.call(sel.options).forEach(function (o) {
+      if (o.value === "" && o.textContent === "Choose…") return;
+      var opt = document.createElement("option");
+      opt.textContent = o.textContent;
+      f.appendChild(opt);
+    });
+  }
+  function resetForm(keepContext) {
+    $("run").value = "1";
+    $("versions").value = ""; $("evidence").value = ""; $("notes").value = "";
+    $("severity").value = "None";
+    Array.prototype.forEach.call(document.querySelectorAll("input[name=platform]"), function (c) { c.checked = false; });
+    Array.prototype.forEach.call(document.querySelectorAll("input[name=result]"), function (c) { c.checked = false; });
+    if (!keepContext) { $("testId").value = ""; $("weather").value = ""; $("date").value = today(); }
+  }
+  function setMsg(text, isErr) {
+    var m = $("formMsg");
+    m.textContent = text || "";
+    m.className = "msg" + (isErr ? " err" : "");
+  }
+
+  function save() {
+    var testId = $("testId").value;
+    var resEl = document.querySelector("input[name=result]:checked");
+    var by = $("by").value.trim();
+    if (!testId) { setMsg("Choose the test.", true); return; }
+    if (!resEl) { setMsg("Choose a result.", true); return; }
+    if (!by) { setMsg("Add who recorded the run.", true); return; }
+    var rec = {
+      _id: uid(),
+      testId: testId,
+      date: $("date").value || today(),
+      run: Number($("run").value) || 1,
+      by: by,
+      platforms: Array.prototype.map.call(document.querySelectorAll("input[name=platform]:checked"), function (c) { return c.value; }),
+      versions: $("versions").value.trim(),
+      weather: $("weather").value.trim(),
+      result: resEl.value,
+      severity: $("severity").value,
+      evidence: $("evidence").value.trim(),
+      notes: $("notes").value.trim(),
+      createdAt: Date.now()
+    };
+    records.push(rec);
+    sortRecords();
+    persist();
+    setMsg(storageOk ? "Saved in this browser." : "Saved for this session only.", !storageOk);
+    resetForm(true);
+    $("run").value = String(rec.run + 1);
+    render();
+  }
+
+  /* ---------- list ---------- */
+  function visible() {
+    var t = $("fTest").value, r = $("fRes").value;
+    return records.filter(function (x) { return (!t || x.testId === t) && (!r || x.result === r); });
+  }
+  function render() {
+    var list = visible();
+    var tbody = $("rows");
+    while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+
+    var counts = { Pass: 0, Partial: 0, Fail: 0 };
+    records.forEach(function (x) { if (counts[x.result] !== undefined) counts[x.result]++; });
+    var st = $("stats");
+    while (st.firstChild) st.removeChild(st.firstChild);
+    st.appendChild(el("div", "stat", records.length + " records"));
+    st.appendChild(el("div", "stat", counts.Pass + " pass"));
+    st.appendChild(el("div", "stat", counts.Partial + " partial"));
+    st.appendChild(el("div", "stat", counts.Fail + " fail"));
+
+    $("empty").hidden = list.length > 0;
+    $("empty").textContent = records.length ? "No records match the filters." : "No records yet.";
+
+    list.forEach(function (x) {
+      var tr = document.createElement("tr");
+      tr.appendChild(el("td", "", fmtDate(x.date)));
+      var tdT = el("td", "", x.testId);
+      if (x.platforms && x.platforms.length) tdT.appendChild(el("div", "note", x.platforms.join(", ")));
+      var extra = [];
+      if (x.weather) extra.push("Weather: " + x.weather);
+      if (x.versions) extra.push("Versions: " + x.versions);
+      if (x.evidence) extra.push("Evidence: " + x.evidence);
+      if (x.notes) extra.push(x.notes);
+      if (extra.length) tdT.appendChild(el("div", "note", extra.join("\n")));
+      tr.appendChild(tdT);
+      tr.appendChild(el("td", "", String(x.run)));
+      tr.appendChild(el("td", "res " + x.result, x.result));
+      tr.appendChild(el("td", "sev-" + x.severity, x.severity));
+      tr.appendChild(el("td", "", x.by));
+      var tdA = document.createElement("td");
+      var b = el("button", "ghost small", pendingDelete === x._id ? "Confirm delete" : "Delete");
+      b.type = "button";
+      b.addEventListener("click", function () { del(x._id); });
+      tdA.appendChild(b);
+      tr.appendChild(tdA);
+      tbody.appendChild(tr);
+    });
+  }
+  function del(id) {
+    if (pendingDelete !== id) { pendingDelete = id; render(); return; }
+    pendingDelete = null;
+    records = records.filter(function (x) { return x._id !== id; });
+    persist();
+    render();
+  }
+
+  /* ---------- export / import ---------- */
+  function download(filename, text, mime) {
+    var blob = new Blob([text], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+  function csvCell(v) {
+    var s = Array.isArray(v) ? v.join("; ") : String(v == null ? "" : v);
+    return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function toCsv(rows) {
+    var cols = ["date", "testId", "run", "result", "severity", "platforms", "by", "weather", "versions", "evidence", "notes"];
+    var lines = [cols.join(",")];
+    rows.forEach(function (r) { lines.push(cols.map(function (c) { return csvCell(r[c]); }).join(",")); });
+    return "\ufeff" + lines.join("\r\n");
+  }
+  function importFile(file) {
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var data = JSON.parse(String(reader.result));
+        var incoming = Array.isArray(data) ? data : data.records;
+        if (!Array.isArray(incoming)) throw new Error("bad");
+        var have = {};
+        records.forEach(function (r) { have[r._id] = true; });
+        var added = 0;
+        incoming.forEach(function (r) {
+          if (r && r._id && r.testId && r.result && !have[r._id]) {
+            records.push({
+              _id: String(r._id), testId: String(r.testId), date: String(r.date || ""),
+              run: Number(r.run) || 1, by: String(r.by || ""),
+              platforms: Array.isArray(r.platforms) ? r.platforms.map(String) : [],
+              versions: String(r.versions || ""), weather: String(r.weather || ""),
+              result: RESULTS.indexOf(r.result) >= 0 ? r.result : "Partial",
+              severity: ["None", "Minor", "Major", "Blocker"].indexOf(r.severity) >= 0 ? r.severity : "None",
+              evidence: String(r.evidence || ""), notes: String(r.notes || ""),
+              createdAt: Number(r.createdAt) || Date.now()
+            });
+            have[r._id] = true; added++;
+          }
+        });
+        sortRecords(); persist(); render();
+        $("listMsg").className = "msg";
+        $("listMsg").textContent = "Imported " + added + " new record" + (added === 1 ? "" : "s") + ".";
+      } catch (e) {
+        $("listMsg").className = "msg err";
+        $("listMsg").textContent = "That file is not a records file from this form.";
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function init() {
+    buildOptions();
+    $("date").value = today();
+    load();
+    sortRecords();
+    $("storageMsg").hidden = storageOk;
+    $("submit").addEventListener("click", save);
+    $("clear").addEventListener("click", function () { resetForm(false); setMsg(""); });
+    $("fTest").addEventListener("change", render);
+    $("fRes").addEventListener("change", render);
+    $("csv").addEventListener("click", function () { download("demo0-test-records.csv", toCsv(visible()), "text/csv;charset=utf-8"); });
+    $("json").addEventListener("click", function () {
+      download("demo0-test-records-" + today() + ".json", JSON.stringify({ version: 1, records: records }, null, 2), "application/json");
+    });
+    $("import").addEventListener("change", function (e) {
+      if (e.target.files && e.target.files[0]) importFile(e.target.files[0]);
+      e.target.value = "";
+    });
+    render();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
