@@ -904,6 +904,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
 .leaflet-tooltip.vt{font:500 .82rem var(--mono)}
 .leaflet-tooltip.flabel{background:rgba(255,255,255,.88);border:0;box-shadow:none;padding:1px 5px;font-size:.78rem}
 .leaflet-tooltip.flabel:before{display:none}
+.leaflet-tooltip.vlab{font-size:.72rem;padding:0 4px;background:rgba(255,255,255,.92)}
 .leaflet-tooltip.mlabel{background:var(--night);color:#fff;border:0;font:500 .82rem var(--mono)}
 .leaflet-tooltip.mlabel:before{display:none}
 .drawing .leaflet-interactive{pointer-events:none!important}
@@ -971,6 +972,28 @@ tr:hover td,tr.hl td{background:var(--sel)}
 .leaflet-tooltip.cpnum:before{display:none}
 
 /* v3 additions */
+.searchbox{position:absolute;z-index:1170;top:12px;left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 200px));max-height:calc(100% - 24px);display:flex;flex-direction:column;background:var(--panel);border-radius:10px;box-shadow:0 6px 26px rgba(15,36,48,.35);overflow:hidden}
+.searchbox[hidden]{display:none}
+.sr-in{display:flex;align-items:center;gap:.5rem;padding:.35rem .35rem .35rem .8rem;background:#fff;border-bottom:1px solid var(--line)}
+.sr-in > svg{flex:none;width:20px;height:20px;color:var(--muted)}
+.sr-in input{flex:1;min-width:0;border:0;padding:.55rem .2rem;font-size:16px;background:transparent;outline:none}
+.sr-in input::-webkit-search-cancel-button{display:none}
+#srList{list-style:none;margin:0;padding:.25rem 0;overflow:auto;flex:1;min-height:0}
+#srList:empty{display:none}
+.sr-grp{font-size:.76rem;font-weight:600;color:var(--muted);padding:.55rem .85rem .2rem}
+.sr-item{display:flex;align-items:center;gap:.7rem;width:100%;text-align:left;border:0;background:none;padding:.45rem .85rem;color:var(--ink)}
+.sr-item[aria-selected=true]{background:var(--sel)}
+.sr-item .tag{flex:none}
+.sr-ic{flex:none;width:20px;height:20px;color:var(--muted)}
+.sr-ic svg{width:20px;height:20px}
+.sr-t{min-width:0}
+.sr-t b{display:block;font-weight:600;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr-t small{display:block;font-size:.8rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr-foot{margin:0;padding:.55rem .85rem;font-size:.85rem;color:var(--muted)}
+.sr-foot[hidden]{display:none}
+.sr-credit{margin:0;padding:.4rem .85rem .55rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--line)}
+.pop .mono{font:500 .84rem var(--mono)}
+
 .guidelink{display:flex;align-items:center;gap:.75rem;margin:.85rem .85rem .2rem;padding:.7rem .85rem;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);text-decoration:none}
 .guidelink:hover{background:var(--hover);border-color:var(--teal)}
 .guidelink svg{flex:none;width:26px;height:26px;color:var(--teal)}
@@ -1081,6 +1104,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
   .coordpanel{top:auto;left:0;right:0;bottom:0;width:auto;height:min(74vh,620px);max-height:none;border-radius:14px 14px 0 0;z-index:1200}
   #cpText,.coordpanel input[type=text],.coordpanel input[type=number]{font-size:16px}
   .bar{display:none}
+  .searchbox{top:8px;left:8px;right:8px;width:auto;transform:none;max-height:calc(100% - 16px - var(--fb))}
   .tabs button{font-size:.86rem;padding:.5rem .2rem .55rem}
   .minipanel{top:auto;left:0;right:0;bottom:0;width:auto;max-height:80vh;border-radius:14px 14px 0 0;z-index:1200}
   .minipanel input[type=text]{font-size:16px}
@@ -1256,6 +1280,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
 
       <div class="ctrls">
         <div class="cgroup">
+          <button class="cbtn" id="searchBtn" type="button" aria-label="Search places, coordinates, areas and your drawings" title="Search (Ctrl+K)" aria-controls="searchBox"></button>
           <button class="cbtn" id="mapMenuBtn" type="button" aria-label="Background map and overlays" title="Background map and overlays" aria-expanded="false" aria-controls="mapMenu"></button>
           <button class="cbtn" id="locBtn" type="button" aria-label="Show my location" title="Show my location"></button>
           <button class="cbtn" id="homeBtn" type="button" aria-label="Zoom to Finland" title="Zoom to Finland"></button>
@@ -1284,6 +1309,16 @@ tr:hover td,tr.hl td{background:var(--sel)}
         </fieldset>
       </div>
 
+      <div class="searchbox" id="searchBox" hidden role="dialog" aria-label="Search">
+        <div class="sr-in">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
+          <input id="srQ" type="search" placeholder="Place, address, MGRS, area or drawing" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="srList" aria-autocomplete="list" aria-label="Search">
+          <button class="ibtn" id="srClose" type="button" aria-label="Close search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <ul id="srList" role="listbox" aria-label="Results"></ul>
+        <p class="sr-foot" id="srFoot"></p>
+        <p class="sr-credit">Places: OpenStreetMap data via Photon by komoot. What you type in place search is sent to that service.</p>
+      </div>
       <div class="holdring" id="holdRing" aria-hidden="true"></div>
       <div class="drawbar" id="drawbar" hidden aria-live="polite"></div>
       <div class="minipanel" id="mvPanel" hidden role="dialog" aria-labelledby="mvTitle">
@@ -1331,7 +1366,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
           </div>
           <div class="cp-radius" id="cpRadiusRow" hidden><label for="cpR" id="cpRLbl">Radius</label><input type="number" id="cpR" min="0" step="any" inputmode="decimal"><select id="cpRU" aria-label="Radius unit"><option value="1">m</option><option value="1000" selected>km</option><option value="1852">NM</option></select></div>
           <div class="cp-radius" id="cpDirRow" hidden><label for="cpDir" id="cpDirLbl">Direction</label><input type="text" id="cpDir" autocomplete="off"><select id="cpDirU" aria-label="Direction unit"></select></div>
-          <p class="small" id="cpLinkNote" hidden>This shape follows its linked points. Saving new coordinates here unlinks it.</p>
+          <p class="small" id="cpLinkNote" hidden>This shape follows its linked points. Changing their names or positions here changes the points too. Adding or removing lines unlinks the shape.</p>
           <div class="two" style="margin-top:.7rem">
             <label><span>Name</span><input type="text" id="cpName" maxlength="80"></label>
             <label id="cpLayerWrap"><span>Layer</span><select id="cpLayer"></select></label>
@@ -3718,6 +3753,7 @@ const ICON = {
   expand:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5M9 9l-4.5-4.5M15 9l4.5-4.5M9 15l-4.5 4.5M15 15l4.5 4.5"/>',
   shrink:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',
   share:'<circle cx="18" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.6-4.1M8.2 13.2l7.6 4.1"/>',
+  search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/>',
   chev:'<path d="M15 5l-7 7 7 7"/>',
   down:'<path d="M6 9l6 6 6-6"/>'
 };
@@ -4058,14 +4094,17 @@ function goTo(t){
   if (gotoMarker) map.removeLayer(gotoMarker);
   gotoMarker = L.circleMarker(ll, { radius:9, color:"#0b6a6f", weight:3, fillColor:"#fff", fillOpacity:.9 }).addTo(map);
   const box = document.createElement("div"); box.className = "pop";
-  box.innerHTML = '<p style="margin:0 0 .3rem;font-weight:600"></p><p style="margin:0 0 .6rem;font:500 .84rem var(--mono)"></p><div class="pbtns"><button type="button" class="btn sm">Save as point</button><button type="button" class="btn ghost sm">Remove</button></div>';
-  box.querySelector("p").textContent = t.label;
-  box.querySelectorAll("p")[1].textContent = mgrs(ll);
-  box.querySelectorAll("button")[0].onclick = () => { addFeature({ kind:"point", name: autoName("point"), pts:[P(ll)] }); map.removeLayer(gotoMarker); gotoMarker = null; };
+  box.innerHTML = '<p style="margin:0 0 .2rem;font-weight:600"></p><p class="small" style="margin:0 0 .35rem"></p><p class="mono" style="margin:0 0 .6rem;cursor:copy" title="Copy"></p><div class="pbtns"><button type="button" class="btn sm">Save as point</button><button type="button" class="btn ghost sm">Remove</button></div>';
+  const ps = box.querySelectorAll("p");
+  ps[0].textContent = t.label;
+  if (t.sub) ps[1].textContent = t.sub; else ps[1].remove();
+  ps[2].textContent = mgrs(ll); ps[2].onclick = () => copy(mgrs(ll), "Copied " + mgrs(ll));
+  box.querySelectorAll("button")[0].onclick = () => { addFeature({ kind:"point", name: t.name || autoName("point"), pts:[P(ll)] }); map.removeLayer(gotoMarker); gotoMarker = null; };
   box.querySelectorAll("button")[1].onclick = () => { map.removeLayer(gotoMarker); gotoMarker = null; };
   gotoMarker.bindPopup(box);
   if (isMobile()) setSheet(false);
-  map.setView(ll, Math.max(map.getZoom(), 13));
+  if (t.bounds && t.bounds.isValid() && t.bounds.getNorthEast().distanceTo(t.bounds.getSouthWest()) > 300) map.fitBounds(t.bounds, Object.assign({ maxZoom:16 }, fitPad()));
+  else map.setView(ll, Math.max(map.getZoom(), t.zoom || 13));
   setTimeout(() => gotoMarker && gotoMarker.openPopup(), 300);
 }
 function setHash(h){
@@ -4384,6 +4423,15 @@ function geom(f){
   if (f.kind === "vector"){ const a = LL(f.pts[0]); const b = destPoint(a, f.az, f.d); return [a, L.latLng(b.lat, b.lng)]; }
   return f.pts.map(LL);
 }
+// Names of the corners of lines, polygons and measurements. Linked shapes take them from their points.
+const hasVN = f => f.kind === "line" || f.kind === "polygon" || f.kind === "measure";
+function vertexNames(f){
+  if (!hasVN(f)) return [];
+  if (f.refs) return f.refs.map(id => findFeat(id)).filter(h => h && isPointLike(h.f)).map(h => h.f.name || "");
+  const n = f.pts.length, v = f.vn || [];
+  return Array.from({ length:n }, (_, i) => v[i] || "");
+}
+const withName = (name, grid) => name ? name + " " + grid : grid;
 function featMetric(f){
   const pts = geom(f);
   switch (f.kind){
@@ -4447,7 +4495,22 @@ function renderLayer(layer){
   let g = groups[layer.id];
   if (!g) g = groups[layer.id] = L.featureGroup();
   g.clearLayers();
-  layer.features.forEach(f => { const o = makeObj(f, layer); if (o){ objs[f.id] = o; g.addLayer(o); } else delete objs[f.id]; });
+  layer.features.forEach(f => {
+    const o = makeObj(f, layer);
+    if (!o){ delete objs[f.id]; return; }
+    objs[f.id] = o; g.addLayer(o);
+    const names = vertexNames(f);
+    if (names.some(Boolean) && !f.refs){ // linked shapes show their points already
+      const pts = geom(f), col = f.kind === "measure" ? "#0f2430" : layer.color;
+      names.forEach((nm, i) => {
+        if (!nm || !pts[i]) return;
+        const m = L.circleMarker(pts[i], { radius:4.5, color:col, weight:2, fillColor:"#fff", fillOpacity:1 });
+        m.bindTooltip(esc(nm), { permanent:true, direction:"top", offset:[0,-5], className:"flabel vlab" });
+        m.on("click", () => o.openPopup(pts[i]));
+        g.addLayer(m);
+      });
+    }
+  });
   if (layer.visible) g.addTo(map); else map.removeLayer(g);
 }
 function renderAllLayers(){
@@ -4500,10 +4563,10 @@ function zoomToFeature(fid, openPopup){
   else map.setView(o.getLatLng(), Math.max(map.getZoom(), 13));
   if (openPopup) setTimeout(() => o.openPopup(), 320);
 }
-function unlink(f){ geom(f); delete f.refs; }
+function unlink(f){ const names = vertexNames(f); geom(f); delete f.refs; if (names.some(Boolean)) f.vn = names; }
 function featCoordsText(f){
-  const pts = f.kind === "rect" ? rectCorners(f) : geom(f);
-  return pts.map(mgrs).join("\n");
+  const pts = f.kind === "rect" ? rectCorners(f) : geom(f), names = vertexNames(f);
+  return pts.map((p, i) => withName(names[i], mgrs(p))).join("\n");
 }
 
 function angleDetails(trueDeg, at){
@@ -4548,15 +4611,16 @@ function popupFor(fid){
     const len = pathLen(pts);
     add("Length", fmtDist(len) + " (" + fmtNM(len) + ")");
     add("Points", String(pts.length));
-    if (pts.length){ add("Start", mgrs(pts[0]), true); add("End", mgrs(pts[pts.length-1]), true); }
-    copyAll = pts.map(mgrs).join("\n"); copyLabel = "Copy all points";
+    const vn = vertexNames(f);
+    if (pts.length){ add(vn[0] || "Start", mgrs(pts[0]), true); add(vn[pts.length-1] || "End", mgrs(pts[pts.length-1]), true); }
+    copyAll = featCoordsText(f); copyLabel = "Copy all points";
   } else if (f.kind === "polygon" || f.kind === "rect"){
     const ring = f.kind === "rect" ? rectCorners(f) : pts;
     add("Area", fmtArea(ringArea(ring)));
     add("Perimeter", fmtDist(pathLen(ring, true)) + " (" + fmtNM(pathLen(ring, true)) + ")");
     if (f.kind === "rect") add("Sides", fmtDist(dist(ring[0], ring[1])) + " × " + fmtDist(dist(ring[1], ring[2])));
     else add("Corners", String(ring.length));
-    copyAll = ring.map(mgrs).join("\n"); copyLabel = "Copy corners";
+    copyAll = featCoordsText(f); copyLabel = "Copy corners";
   } else if (f.kind === "circle"){
     add("Center", mgrs(pts[0]), true);
     add("Radius", fmtDist(f.r) + " (" + fmtNM(f.r) + ")");
@@ -4566,8 +4630,9 @@ function popupFor(fid){
     const d = dist(pts[0], pts[1]), b = bearing(pts[0], pts[1]);
     add("Distance", fmtDist(d) + " (" + fmtNM(d) + ")");
     add(dirLabel, f.kind === "vector" ? fmtVecAng(f, b, pts[0]) : fmtAng(b, pts[0]));
-    add("Start", mgrs(pts[0]), true); add("End", mgrs(pts[1]), true);
-    copyAll = mgrs(pts[0]) + "\n" + mgrs(pts[1]); copyLabel = "Copy start and end";
+    const vn = vertexNames(f);
+    add(vn[0] || "Start", mgrs(pts[0]), true); add(vn[1] || "End", mgrs(pts[1]), true);
+    copyAll = f.kind === "measure" ? featCoordsText(f) : mgrs(pts[0]) + "\n" + mgrs(pts[1]); copyLabel = "Copy start and end";
   }
   box.appendChild(dl);
   if (f.kind === "measure" || f.kind === "vector") box.appendChild(angleDetails(bearing(pts[0], pts[1]), pts[0]));
@@ -4594,11 +4659,12 @@ function popupFor(fid){
   }
   if ((f.kind === "line" || f.kind === "polygon") && pts.length > 1){
     const legs = document.createElement("div"); legs.className = "legs";
-    const ring = f.kind === "polygon" ? pts.concat([pts[0]]) : pts;
+    const ring = f.kind === "polygon" ? pts.concat([pts[0]]) : pts, vn = vertexNames(f);
+    const nameOf = j => esc(vn[j % pts.length] || String(j % pts.length + 1));
     let h = "<table><tbody>";
     for (let i = 1; i < ring.length && i <= 60; i++){
       const d = dist(ring[i-1], ring[i]), b = bearing(ring[i-1], ring[i]);
-      h += "<tr><td>" + i + "–" + (f.kind === "polygon" && i === ring.length-1 ? 1 : i+1) + "</td><td>" + fmtDist(d) + "</td><td>" + esc(fmtAng(b, ring[i-1])) + "</td></tr>";
+      h += "<tr><td>" + nameOf(i-1) + "–" + nameOf(i) + "</td><td>" + fmtDist(d) + "</td><td>" + esc(fmtAng(b, ring[i-1])) + "</td></tr>";
     }
     legs.innerHTML = h + "</tbody></table>";
     box.appendChild(legs);
@@ -4722,7 +4788,7 @@ function drawHandles(){
       if (!f.refs) h.on("dblclick", () => {
         const min = f.kind === "polygon" ? 3 : 2;
         if (f.pts.length <= min){ toast("A " + f.kind + " needs at least " + min + " points."); return; }
-        f.pts.splice(i, 1); commit();
+        f.pts.splice(i, 1); if (f.vn) f.vn.splice(i, 1); commit();
       });
     });
     if (!f.refs){
@@ -4731,7 +4797,7 @@ function drawHandles(){
         const a = pts[i], b = pts[(i+1) % n];
         const mid = L.latLng((a.lat + b.lat)/2, (a.lng + b.lng)/2);
         mkH(mid, "mid", ll => { const q = geom(f); q.splice(i+1, 0, ll); if (live) live.setLatLngs(q); },
-          ll => { f.pts.splice(i+1, 0, P(ll)); commit(); });
+          ll => { f.pts.splice(i+1, 0, P(ll)); if (f.vn){ while (f.vn.length < i+1) f.vn.push(""); f.vn.splice(i+1, 0, ""); } commit(); });
       }
     }
   } else if (f.kind === "rect"){
@@ -4930,6 +4996,7 @@ function featGeoJSON(f, l, compact){
   } else if (f.kind === "line" || f.kind === "measure" || f.kind === "vector"){
     geometry = { type:"LineString", coordinates: pts.map(g) };
     if (!compact) props.length_m = Math.round(pathLen(pts));
+    { const vn = vertexNames(f); if (vn.some(Boolean)) props.vertex_names = vn; }
     if (f.kind === "vector"){ props.dist_m = Math.round(f.d*10)/10; props.az_true = Math.round(f.az*1e4)/1e4; }
     if (f.kind === "measure" && !compact){ props.az_true = Math.round(bearing(pts[0], pts[1])*100)/100; }
   } else {
@@ -4937,6 +5004,7 @@ function featGeoJSON(f, l, compact){
     const c = ring.map(g); c.push(c[0]);
     geometry = { type:"Polygon", coordinates:[c] };
     if (!compact) props.area_m2 = Math.round(f.kind === "circle" ? Math.PI*f.r*f.r : ringArea(ring));
+    if (f.kind === "polygon"){ const vn = vertexNames(f); if (vn.some(Boolean)) props.vertex_names = vn; }
     if (f.kind === "circle"){ props.center = g(pts[0]); props.radius_m = Math.round(f.r*10)/10; }
   }
   return { type:"Feature", properties:props, geometry };
@@ -4971,6 +5039,7 @@ function exportKML(layers){
     l.features.forEach(f => {
       const pts = geom(f);
       let desc = KIND[f.kind], gm;
+      const vnk = vertexNames(f); if (vnk.some(Boolean)) desc += ". Points: " + vnk.map((n, i) => n || String(i + 1)).join(", ");
       if (f.kind === "point" || f.kind === "symbol"){
         gm = "<Point><coordinates>" + c(pts[0]) + "</coordinates></Point>";
         desc += ", MGRS " + mgrs(pts[0]); if (f.kind === "symbol") desc += ", SIDC " + sidcOf(f.sym);
@@ -5027,7 +5096,11 @@ function importGeoJSON(data, fallbackName, fresh){
     if (!g) return;
     const l = getLayer(p.layer);
     if (p.stroke && /^#[0-9a-f]{6}$/i.test(p.stroke) && !l.features.length) l.color = p.stroke;
-    const push = f => { f.id = uid(); f.name = String(p.name || f.name || KIND[f.kind]); l.features.push(f); n++; };
+    const push = f => {
+      f.id = uid(); f.name = String(p.name || f.name || KIND[f.kind]);
+      if (Array.isArray(p.vertex_names) && hasVN(f) && p.vertex_names.some(Boolean)) f.vn = p.vertex_names.slice(0, f.pts.length).map(x => String(x || ""));
+      l.features.push(f); n++;
+    };
     const parts = (type, coords) => {
       if (type === "Point"){
         if (p.kind === "symbol" && p.sidc){
@@ -5408,6 +5481,7 @@ map.on("move", () => { if (useCenter()){ hover = null; updateReadout(); if (tool
 document.addEventListener("keydown", e => {
   const tag = (e.target.tagName || "").toLowerCase();
   if (tag === "input" || tag === "select" || tag === "textarea") return;
+  if (e.key === "Escape" && SR.open){ closeSearch(); return; }
   if (e.key === "Escape" && CP.open){ closeCoordPanel(); return; }
   if (e.key === "Escape" && !$("mvPanel").hidden){ closeMove(); return; }
   if (e.key === "Escape" && EDIT){ stopEditShape(); return; }
@@ -5743,11 +5817,11 @@ const CP_KINDS = [["point","Points"],["symbol","Symbols"],["line","Line"],["poly
 const CP_HINT = {
   point:"One coordinate per line. Each line becomes a point. Text before or after a coordinate becomes its name.",
   symbol:"One coordinate per line. Each line becomes a symbol. Text before or after a coordinate becomes its name.",
-  line:"At least 2 coordinates, one per line, in order.",
-  polygon:"At least 3 corners, one per line, in order. The shape closes itself.",
+  line:"At least 2 coordinates, one per line, in order. Text before or after a coordinate names that point.",
+  polygon:"At least 3 corners, one per line, in order. The shape closes itself. Text before or after a coordinate names that corner.",
   circle:"The center coordinate, and the radius below.",
   rect:"Two opposite corners, one per line.",
-  measure:"Two coordinates, start and end. Saved as a measurement showing distance and direction.",
+  measure:"Two coordinates, start and end, each with an optional name. Saved as a measurement showing distance and direction.",
   vector:"The start coordinate, then the distance and direction below."
 };
 const cpLayer = L.layerGroup().addTo(map);
@@ -5808,6 +5882,8 @@ function cpRender(){
   $("cpDirLbl").textContent = "Direction" + (S.north === "grid" ? " (grid)" : "");
   const linked = hit && hit.f.refs;
   $("cpLinkNote").hidden = !linked;
+  // a point's or symbol's name is edited on its coordinate line, so the separate name field is not needed
+  $("cpName").closest("label").hidden = !!hit && (CP.kind === "point" || CP.kind === "symbol");
   $("cpLayerWrap").hidden = !!hit;
   $("cpFileBtn").hidden = !!hit;
   const sel = $("cpLayer"); sel.innerHTML = "";
@@ -5915,14 +5991,23 @@ function cpCommit(){
   const pts = p.items.map(i => i.ll), k = CP.kind, nm = $("cpName").value.trim();
   if (CP.edit){
     const hit = findFeat(CP.edit); if (!hit) { closeCoordPanel(); return; }
-    const f = hit.f;
-    if (f.refs) delete f.refs;
-    if (k === "circle"){ f.pts = [P(pts[0])]; f.r = Math.round(cpRadius()*10)/10; }
+    const f = hit.f, names = p.items.map(i => i.name || "");
+    let kept = false;
+    if (f.refs && f.refs.length === pts.length && (k === "line" || k === "polygon" || k === "measure")){
+      // same number of points: move and rename the linked points, keep the link
+      f.refs.forEach((id, i) => { const h = findFeat(id); if (!h) return; h.f.pts = [P(pts[i])]; if (names[i]) h.f.name = names[i]; });
+      kept = true;
+    } else if (f.refs) delete f.refs;
+    if (kept){ /* geometry comes from the points */ }
+    else if (k === "circle"){ f.pts = [P(pts[0])]; f.r = Math.round(cpRadius()*10)/10; }
     else if (k === "vector"){ f.pts = [P(pts[0])]; f.d = CP.vec.d; f.az = CP.vec.az; f.u = $("cpDirU").value; }
-    else if (k === "point" || k === "symbol") f.pts = [P(pts[0])];
-    else f.pts = pts.map(P);
-    if (nm) f.name = nm;
-    save(); renderLayer(hit.l); if (isPointLike(f)) refreshLinked(); renderLayersPanel();
+    else if (k === "point" || k === "symbol"){ f.pts = [P(pts[0])]; if (names[0]) f.name = names[0]; }
+    else {
+      f.pts = pts.map(P);
+      if (hasVN(f)){ if (names.some(Boolean)) f.vn = names; else delete f.vn; }
+    }
+    if (nm && !(k === "point" || k === "symbol")) f.name = nm;
+    save(); renderAllLayers();
     const id = f.id; toast("Updated " + f.name);
     closeCoordPanel();
     zoomToFeature(id, true);
@@ -5936,10 +6021,18 @@ function cpCommit(){
       if (k === "point") added.push(addFeature({ kind:"point", name: name || autoName("point"), pts:[P(it.ll)] }, true));
       else { const sym = Object.assign({}, SYM); added.push(addFeature({ kind:"symbol", name: name || symName(sym), pts:[P(it.ll)], sym }, true)); }
     });
-  } else if (k === "line" || k === "polygon") added.push(addFeature({ kind:k, name: nm || autoName(k), pts: pts.map(P) }, true));
+  } else if (k === "line" || k === "polygon"){
+    const f = { kind:k, name: nm || autoName(k), pts: pts.map(P) }, names = p.items.map(i => i.name || "");
+    if (names.some(Boolean)) f.vn = names;
+    added.push(addFeature(f, true));
+  }
   else if (k === "circle") added.push(addFeature({ kind:"circle", name: nm || autoName("circle"), pts:[P(pts[0])], r: Math.round(cpRadius()*10)/10 }, true));
   else if (k === "rect") added.push(addFeature({ kind:"rect", name: nm || autoName("rect"), pts:[P(pts[0]), P(pts[1])] }, true));
-  else if (k === "measure") added.push(addFeature({ kind:"measure", name: nm || autoName("measure"), pts:[P(pts[0]), P(pts[1])] }, true));
+  else if (k === "measure"){
+    const f = { kind:"measure", name: nm || autoName("measure"), pts:[P(pts[0]), P(pts[1])] }, names = p.items.slice(0, 2).map(i => i.name || "");
+    if (names.some(Boolean)) f.vn = names;
+    added.push(addFeature(f, true));
+  }
   else if (k === "vector") added.push(addFeature({ kind:"vector", name: nm || autoName("vector"), pts:[P(pts[0])], d: CP.vec.d, az: CP.vec.az, u: $("cpDirU").value }, true));
   const l = activeLayer();
   if (CP.layer !== prev){ S.active = CP.layer; save(); renderLayersPanel(); }
@@ -5953,7 +6046,9 @@ function cpCommit(){
 function featCoordText(f){
   if (f.kind === "rect"){ const c = rectCorners(f); return [mgrs10(c[3]), mgrs10(c[1])].join("\n"); }
   if (f.kind === "vector") return mgrs10(LL(f.pts[0]));
-  return geom(f).map(mgrs10).join("\n");
+  if (isPointLike(f)) return withName(f.name, mgrs10(LL(f.pts[0])));
+  const names = vertexNames(f);
+  return geom(f).map((p, i) => withName(names[i], mgrs10(p))).join("\n");
 }
 function editCoords(fid){
   const hit = findFeat(fid); if (!hit) return;
@@ -5998,6 +6093,156 @@ $("cpFile").onchange = e => {
 };
 $("cpOpen").onclick = () => openCoordPanel(null);
 $("symCoords").onclick = () => openCoordPanel("symbol");
+
+/* ================= search: places, coordinates, areas, your drawings ================= */
+// Places come from Photon (photon.komoot.io, OpenStreetMap data), which allows search-as-you-type.
+// If Photon fails, pressing Enter tries Nominatim once (it does not allow search-as-you-type).
+const SR = { open:false, items:[], idx:-1, timer:0, ctl:null, cache:new Map(), places:null, state:"", q:"" };
+const SR_TYPE = { city:"City", town:"Town", village:"Village", hamlet:"Village", suburb:"District", neighbourhood:"Area", locality:"Place",
+  isolated_dwelling:"House", farm:"Farm", house:"Address", street:"Street", residential:"Street", peak:"Hill", hill:"Hill", water:"Water",
+  lake:"Lake", bay:"Bay", island:"Island", islet:"Island", wood:"Forest", forest:"Forest", wetland:"Bog", bog:"Bog", cape:"Cape",
+  station:"Station", aerodrome:"Airfield", administrative:"Area", municipality:"Municipality", county:"Region", state:"Region", road:"Road" };
+const srKind = p => SR_TYPE[p.osm_value] || SR_TYPE[p.type] || (p.osm_value ? p.osm_value.replace(/_/g, " ").replace(/^./, c => c.toUpperCase()) : "Place");
+function openSearch(){
+  $("mapMenu").hidden = true;
+  if (isMobile()) setSheet(false);
+  $("searchBox").hidden = false; SR.open = true;
+  $("srQ").focus(); $("srQ").select();
+  srRun(true);
+}
+function closeSearch(){
+  $("searchBox").hidden = true; SR.open = false;
+  clearTimeout(SR.timer); if (SR.ctl) SR.ctl.abort();
+}
+function srLocal(q){
+  const out = [], n = norm(q);
+  const c = parseCoord(q);
+  if (c) out.push({ grp:"Coordinate", label:c.label, sub: mgrs(L.latLng(c.lat, c.lon)), icon:"locate", act:() => goTo(c) });
+  if (n.length >= 2){
+    const mine = [];
+    S.layers.forEach(l => l.features.forEach(f => { if (norm(f.name).includes(n)) mine.push({ grp:"Your drawings", label:f.name, sub:l.name + ", " + KIND[f.kind].toLowerCase(), icon:KIND_ICON[f.kind], color:l.color, act:() => zoomToFeature(f.id, true) }); }));
+    out.push(...mine.slice(0, 6));
+    const ar = AREAS.filter(a => norm(a.id).includes(n) || norm(a.name).includes(n)).slice(0, 6);
+    ar.forEach(a => out.push({ grp:"R and D areas", label:a.id + (a.name ? " " + a.name : ""), sub:(a.t === "R" ? "Restricted area" : "Danger area") + ", upper " + a.up, tag:a.t, act:() => { showTab("areas"); selectArea(a.id); } }));
+  }
+  return out;
+}
+async function srPhoton(q){
+  const key = "p:" + q.toLowerCase();
+  if (SR.cache.has(key)) return SR.cache.get(key);
+  if (SR.ctl) SR.ctl.abort();
+  SR.ctl = new AbortController();
+  const c = map.getCenter();
+  const url = "https://photon.komoot.io/api/?q=" + encodeURIComponent(q) + "&limit=8&lat=" + c.lat.toFixed(3) + "&lon=" + c.lng.toFixed(3);
+  const r = await fetch(url, { signal: SR.ctl.signal });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const d = await r.json();
+  const res = (d.features || []).filter(f => f.geometry && f.geometry.coordinates).map(f => {
+    const p = f.properties || {}, [lon, lat] = f.geometry.coordinates;
+    const street = [p.street, p.housenumber].filter(Boolean).join(" ");
+    const name = p.name || street || p.city || "Unnamed place";
+    const where = [p.name && street ? street : "", [p.postcode, p.city || p.district].filter(Boolean).join(" "), p.county, p.country]
+      .filter((x, i, arr) => x && x !== name && arr.indexOf(x) === i).slice(0, 3).join(", ");
+    let bounds = null;
+    if (Array.isArray(p.extent) && p.extent.length === 4) bounds = L.latLngBounds([p.extent[3], p.extent[0]], [p.extent[1], p.extent[2]]);
+    return { name, lat, lon, kind: srKind(p), where, bounds, street: !!(p.housenumber) };
+  });
+  SR.cache.set(key, res); return res;
+}
+async function srNominatim(q){
+  const key = "n:" + q.toLowerCase();
+  if (SR.cache.has(key)) return SR.cache.get(key);
+  const r = await fetch("https://nominatim.openstreetmap.org/search?format=jsonv2&limit=8&q=" + encodeURIComponent(q));
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  const d = await r.json();
+  const res = d.map(x => {
+    const parts = String(x.display_name || "").split(", ");
+    const bb = x.boundingbox ? L.latLngBounds([+x.boundingbox[0], +x.boundingbox[2]], [+x.boundingbox[1], +x.boundingbox[3]]) : null;
+    return { name: parts[0] || "Place", lat:+x.lat, lon:+x.lon, kind: srKind({ osm_value:x.type }), where: parts.slice(1, 4).join(", "), bounds: bb };
+  });
+  SR.cache.set(key, res); return res;
+}
+function placeItem(p){
+  return { grp:"Places", label:p.name, sub:p.kind + (p.where ? ", " + p.where : ""), icon:"point", act:() => goTo({ lat:p.lat, lon:p.lon, label:p.name, sub:p.kind + (p.where ? ", " + p.where : ""), name:p.name, bounds:p.bounds, zoom: p.street ? 16 : 13 }) };
+}
+function srRender(){
+  const q = $("srQ").value.trim(), list = $("srList");
+  const items = srLocal(q);
+  if (SR.places && SR.places.q === q) SR.places.list.forEach(p => items.push(placeItem(p)));
+  const order = ["Coordinate", "Your drawings", "Places", "R and D areas"];
+  items.sort((x, y) => order.indexOf(x.grp) - order.indexOf(y.grp));
+  SR.items = items;
+  if (SR.idx >= items.length) SR.idx = items.length - 1;
+  list.innerHTML = "";
+  let grp = "";
+  items.forEach((it, i) => {
+    if (it.grp !== grp){ grp = it.grp; const h = document.createElement("li"); h.className = "sr-grp"; h.textContent = grp; h.setAttribute("role", "presentation"); list.appendChild(h); }
+    const li = document.createElement("li"); li.setAttribute("role", "presentation");
+    const b = document.createElement("button"); b.type = "button"; b.className = "sr-item"; b.id = "sr-" + i;
+    b.setAttribute("role", "option"); b.setAttribute("aria-selected", i === SR.idx ? "true" : "false");
+    b.innerHTML = (it.tag ? '<span class="tag ' + it.tag + '"></span>' : '<span class="sr-ic"' + (it.color ? ' style="color:' + it.color + '"' : '') + '>' + svgI(it.icon || "point") + '</span>') + '<span class="sr-t"><b></b><small></small></span>';
+    b.querySelector("b").textContent = it.label; b.querySelector("small").textContent = it.sub || "";
+    b.onclick = () => srPick(i);
+    b.onmousemove = () => { if (SR.idx !== i){ SR.idx = i; srMark(); } };
+    li.appendChild(b); list.appendChild(li);
+  });
+  const foot = $("srFoot");
+  if (!q) foot.textContent = "Type a place, an address, a grid such as 35VLH5900075500, an area code or the name of something you drew.";
+  else if (SR.state === "busy") foot.textContent = "Searching places…";
+  else if (SR.state === "fail") foot.textContent = "Place search is not reachable right now. Press Enter to try the other service. Coordinates, areas and your drawings still work.";
+  else if (SR.state === "done" && SR.places && SR.places.q === q && !SR.places.list.length) foot.textContent = "No places found for “" + q + "”.";
+  else if (q.length < 3 && !items.length) foot.textContent = "Type at least 3 letters to search places.";
+  else foot.textContent = items.length ? "" : "Nothing found yet.";
+  foot.hidden = !foot.textContent;
+  $("srQ").setAttribute("aria-activedescendant", SR.idx >= 0 ? "sr-" + SR.idx : "");
+}
+function srMark(){
+  document.querySelectorAll("#srList .sr-item").forEach((b, i) => b.setAttribute("aria-selected", i === SR.idx ? "true" : "false"));
+  const el = $("sr-" + SR.idx); if (el) el.scrollIntoView({ block:"nearest" });
+  $("srQ").setAttribute("aria-activedescendant", SR.idx >= 0 ? "sr-" + SR.idx : "");
+}
+function srPick(i){
+  const it = SR.items[i]; if (!it) return;
+  closeSearch(); it.act();
+}
+function srRun(immediate){
+  const q = $("srQ").value.trim();
+  SR.idx = -1; clearTimeout(SR.timer);
+  const looksLocal = parseCoord(q) || /^ef[rd]?\d/i.test(q);
+  if (q.length < 3 || looksLocal){ SR.state = ""; srRender(); return; }
+  if (SR.cache.has("p:" + q.toLowerCase())){ SR.places = { q, list: SR.cache.get("p:" + q.toLowerCase()) }; SR.state = "done"; srRender(); return; }
+  SR.state = "busy"; srRender();
+  SR.timer = setTimeout(async () => {
+    try { const list = await srPhoton(q); if ($("srQ").value.trim() !== q) return; SR.places = { q, list }; SR.state = "done"; }
+    catch(e){ if (e.name === "AbortError") return; SR.state = "fail"; }
+    srRender();
+  }, immediate ? 0 : 450);
+}
+$("srQ").addEventListener("input", () => srRun(false));
+$("srQ").addEventListener("keydown", async e => {
+  if (e.key === "ArrowDown"){ e.preventDefault(); if (SR.items.length){ SR.idx = (SR.idx + 1) % SR.items.length; srMark(); } }
+  else if (e.key === "ArrowUp"){ e.preventDefault(); if (SR.items.length){ SR.idx = SR.idx <= 0 ? SR.items.length - 1 : SR.idx - 1; srMark(); } }
+  else if (e.key === "Escape"){ e.preventDefault(); closeSearch(); }
+  else if (e.key === "Enter"){
+    e.preventDefault();
+    if (SR.idx >= 0){ srPick(SR.idx); return; }
+    const q = $("srQ").value.trim();
+    if (SR.state === "fail" && q.length >= 3){
+      SR.state = "busy"; srRender();
+      try { const list = await srNominatim(q); SR.places = { q, list }; SR.state = "done"; } catch(err){ SR.state = "fail"; }
+      srRender(); return;
+    }
+    if (SR.items.length) srPick(0);
+  }
+});
+$("srClose").onclick = closeSearch;
+$("searchBtn").innerHTML = svgI("search");
+$("searchBtn").onclick = e => { e.stopPropagation(); SR.open ? closeSearch() : openSearch(); };
+document.addEventListener("keydown", e => {
+  const tag = (e.target.tagName || "").toLowerCase();
+  if ((e.key === "k" && (e.ctrlKey || e.metaKey)) || (e.key === "/" && tag !== "input" && tag !== "textarea" && tag !== "select")){ e.preventDefault(); openSearch(); }
+});
+document.addEventListener("pointerdown", e => { if (SR.open && !$("searchBox").contains(e.target) && !$("searchBtn").contains(e.target)) closeSearch(); });
 
 /* ================= start ================= */
 syncSettings();
