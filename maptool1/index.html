@@ -971,6 +971,12 @@ tr:hover td,tr.hl td{background:var(--sel)}
 .leaflet-tooltip.cpnum:before{display:none}
 
 /* v3 additions */
+.guidelink{display:flex;align-items:center;gap:.75rem;margin:.85rem .85rem .2rem;padding:.7rem .85rem;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);text-decoration:none}
+.guidelink:hover{background:var(--hover);border-color:var(--teal)}
+.guidelink svg{flex:none;width:26px;height:26px;color:var(--teal)}
+.guidelink b{display:block;font:600 1rem var(--cond)}
+.guidelink small{display:block;font-size:.82rem;color:var(--muted)}
+
 #map{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .chk{flex:none;width:18px;height:18px;margin:0 .1rem;accent-color:var(--teal)}
 .lrow .chk{margin-left:.15rem}
@@ -1199,6 +1205,10 @@ tr:hover td,tr.hl td{background:var(--sel)}
         <p class="small" style="padding:0 .85rem 1rem">All 1 168 APP-6D point symbols that milsymbol can draw are listed. Search works in English, and in Finnish for common symbols. You can also type any 20-digit SIDC above.</p>
       </section>
       <section class="pane" id="p-settings" role="tabpanel" aria-labelledby="t-settings" hidden>
+        <a class="guidelink" href="guide.html" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 015.5 4H11v16H5.5A1.5 1.5 0 014 18.5z"/><path d="M20 5.5A1.5 1.5 0 0018.5 4H13v16h5.5a1.5 1.5 0 001.5-1.5z"/></svg>
+          <span><b>User guide</b><small>How every feature works, with pictures. Opens in a new tab.</small></span>
+        </a>
         <div class="settings">
           <h2 class="sub">Coordinates</h2>
           <div class="two">
@@ -1233,7 +1243,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
           <div class="row" style="margin-top:0"><label><input type="checkbox" id="showLabels"> Show names on the map</label></div>
           <div class="row"><label><input type="checkbox" id="setLock"> Lock R and D areas so they ignore taps</label></div>
           <p class="small">Distances and areas are great-circle values on a sphere, good to about 0.5 %.</p>
-          <p class="small"><a href="../">Oscar Nissin</a>, MGRS map tool</p>
+          <p class="small"><a href="guide.html" target="_blank" rel="noopener">User guide</a>. <a href="../">Oscar Nissin</a>, MGRS map tool.</p>
         </div>
       </section>
     </aside>
