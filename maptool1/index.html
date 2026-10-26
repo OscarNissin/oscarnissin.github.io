@@ -882,6 +882,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
 .dbtn.pri{background:var(--foam);border-color:var(--foam);color:var(--night)}
 .dbtn:disabled{opacity:.4;cursor:default}
 .radius{display:flex;align-items:center;gap:.4rem;font-size:.86rem;color:var(--mist)}
+.radius select{background:var(--night-2);border-color:var(--night-3);color:#fff;padding:.25rem .35rem}
 .radius input{width:6.5rem;padding:.3rem .45rem;font-size:16px;background:var(--night-2);border-color:var(--night-3);color:#fff}
 
 .readout{position:absolute;z-index:1000;left:12px;bottom:calc(var(--fb) + 12px);background:rgba(15,36,48,.92);color:#fff;border:0;border-radius:8px;padding:.38rem .65rem .4rem;text-align:left;cursor:copy;max-width:calc(100% - 24px)}
@@ -1034,9 +1035,10 @@ tr:hover td,tr.hl td{background:var(--sel)}
 .pop details.angs summary{cursor:pointer;color:var(--teal);font-weight:600}
 .pop details.angs td{padding:.15rem .3rem;font-size:.8rem}
 .pop details.angs td:last-child{font-family:var(--mono)}
-.pop .vedit{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;align-items:end;margin:0 0 .6rem;padding:.5rem;background:var(--hover);border-radius:6px}
+.pop .vedit{display:grid;grid-template-columns:1fr;gap:.4rem;align-items:end;margin:0 0 .6rem;padding:.5rem;background:var(--hover);border-radius:6px}
 .pop .vedit label{font-size:.76rem;color:var(--muted)}
-.pop .vedit input{padding:.3rem .4rem;width:100%}
+.pop .vedit input{padding:.3rem .4rem;width:100%;min-width:4.5rem}
+.pop .vedit .iw select{flex:0 0 auto;max-width:9rem}
 .pop .vedit select{padding:.25rem .2rem}
 .pop .vedit button{grid-column:1/-1;justify-self:start}
 .app.focus .bar{display:none}
@@ -1215,7 +1217,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
               <option value="moa">Minutes of angle</option></select></label>
             <label><span>North</span><select id="setNorth"><option value="true">True north</option><option value="grid">Grid north (UTM)</option></select></label>
           </div>
-          <p class="small">You can type a direction in any unit by adding its sign: 45°, 45 30 15, 800 mil, 7-50 or 750v, 2700 MOA. A plain number uses the unit above. Grid north follows the MGRS grid lines; it differs from true north by up to a few degrees in Finland.</p>
+          <p class="small">This unit is used for showing directions. Where you type a direction (vectors, moving) you pick the unit next to the field, or add its sign: 45°, 45 30 15, 800 mil, 7-50 or 750v, 2700 MOA. Grid north follows the MGRS grid lines; it differs from true north by up to a few degrees in Finland.</p>
         </div>
         <div class="settings">
           <h2 class="sub">Placing things on the map</h2>
@@ -1279,7 +1281,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
         <div class="cp-body">
           <div class="two">
             <label><span>Distance</span><span class="iw"><input type="text" id="mvDist" inputmode="decimal" autocomplete="off"><select id="mvUnit" aria-label="Distance unit"><option value="1">m</option><option value="1000">km</option><option value="1852">NM</option></select></span></label>
-            <label><span id="mvDirLbl">Direction</span><span class="iw"><input type="text" id="mvDir" autocomplete="off"><span class="u" id="mvAngU"></span></span></label>
+            <label><span id="mvDirLbl">Direction</span><span class="iw"><input type="text" id="mvDir" autocomplete="off"><select id="mvAngU" aria-label="Direction unit"></select></span></label>
           </div>
         </div>
         <div class="cp-foot"><button class="btn" id="mvApply" type="button">Move</button><button class="btn ghost" id="mvCancel" type="button">Cancel</button></div>
@@ -1318,7 +1320,7 @@ tr:hover td,tr.hl td{background:var(--sel)}
             <label><input type="checkbox" id="cpLonFirst"> Decimal pairs are lon, lat</label>
           </div>
           <div class="cp-radius" id="cpRadiusRow" hidden><label for="cpR" id="cpRLbl">Radius</label><input type="number" id="cpR" min="0" step="any" inputmode="decimal"><select id="cpRU" aria-label="Radius unit"><option value="1">m</option><option value="1000" selected>km</option><option value="1852">NM</option></select></div>
-          <div class="cp-radius" id="cpDirRow" hidden><label for="cpDir" id="cpDirLbl">Direction</label><input type="text" id="cpDir" autocomplete="off"><span id="cpDirU"></span></div>
+          <div class="cp-radius" id="cpDirRow" hidden><label for="cpDir" id="cpDirLbl">Direction</label><input type="text" id="cpDir" autocomplete="off"><select id="cpDirU" aria-label="Direction unit"></select></div>
           <p class="small" id="cpLinkNote" hidden>This shape follows its linked points. Saving new coordinates here unlinks it.</p>
           <div class="two" style="margin-top:.7rem">
             <label><span>Name</span><input type="text" id="cpName" maxlength="80"></label>
@@ -3878,11 +3880,37 @@ function parseAng(str, unit){
   return norm360(v);
 }
 
+/* direction input units (vectors, moving) */
+const DIR_UNITS = [["deg","Degrees °"],["mil","NATO mil"],["fimil","FinMIL ᵛ"],["moa","MOA"]];
+function curInU(){ return DIR_UNITS.some(u => u[0] === S.inU) ? S.inU : (S.ang === "dms" ? "deg" : S.ang); }
+function dirUnitOptions(sel){ return DIR_UNITS.map(([v, l]) => '<option value="' + v + '"' + (v === sel ? " selected" : "") + '>' + l + '</option>').join(""); }
+// value for a text field in unit u, without the unit sign
+function angInput(deg, u){
+  deg = norm360(deg);
+  if (u === "mil") return String(Math.round(deg*6400/360) % 6400);
+  if (u === "fimil"){ const v = Math.round(deg*6000/360) % 6000; return Math.floor(v/100) + "-" + String(v % 100).padStart(2, "0"); }
+  if (u === "moa") return String(Math.round(deg*60) % 21600);
+  return String(+deg.toFixed(2));
+}
+const refDeg = (trueDeg, at) => S.north === "grid" && at ? toGrid(trueDeg, at) : trueDeg;
+// When the unit select changes, convert what is already typed so the direction stays the same
+function wireUnitSelect(input, select, onChange){
+  let prev = select.value;
+  select.addEventListener("focus", () => { prev = select.value; });
+  select.addEventListener("change", () => {
+    if (input.value.trim()){ const v = parseAng(input.value, prev); if (v !== null) input.value = angInput(v, select.value); }
+    prev = select.value; S.inU = select.value; save();
+    if (onChange) onChange();
+  });
+}
+// a vector shows its direction in the unit it was given in
+const fmtVecAng = (f, trueDeg, at) => fmtAngU(refDeg(trueDeg, at), f.u || S.ang);
+
 /* ================= state ================= */
 const KEY = "oscarnissin.mgrsmap.v1";
 const PALETTE = ["#0b6a6f","#1d5fbf","#7a3fb8","#b8326e","#2f7d32","#8a5a1f","#24323a","#0a8f9a"];
 const S = { digits:5, spaced:true, base:"osm", showR:true, showD:true, labels:false, active:null, layers:[], sym:null,
-  ang:"deg", north:"true", place:null, drag:true, areaLock:false, recent:[] };
+  ang:"deg", north:"true", place:null, drag:true, areaLock:false, recent:[], inU:null };
 const mgrs = ll => (ll.lat > 84 || ll.lat < -80) ? ll.lat.toFixed(5) + ", " + ll.lng.toFixed(5) : toMGRS(ll.lat, ll.lng, S.digits, S.spaced);
 function newLayer(name){
   return { id: uid(), name, color: PALETTE[S.layers.length % PALETTE.length], visible: true, features: [] };
@@ -4353,7 +4381,7 @@ function featMetric(f){
     case "polygon": return fmtArea(ringArea(pts));
     case "rect": return fmtArea(ringArea(rectCorners(f)));
     case "circle": return "r " + fmtDist(f.r);
-    case "measure": case "vector": return pts.length > 1 ? fmtDist(dist(pts[0], pts[1])) + " " + fmtAng(bearing(pts[0], pts[1]), pts[0]) : "";
+    case "measure": case "vector": return pts.length > 1 ? fmtDist(dist(pts[0], pts[1])) + " " + (f.kind === "vector" ? fmtVecAng(f, bearing(pts[0], pts[1]), pts[0]) : fmtAng(bearing(pts[0], pts[1]), pts[0])) : "";
     default: return pts[0] ? mgrs(pts[0]) : "";
   }
 }
@@ -4388,7 +4416,8 @@ function makeObj(f, layer){
     const line = L.polyline(pts, { color:col, weight: f.kind === "measure" ? 2.5 : 3.5, dashArray: f.kind === "measure" ? "8 5" : null });
     const halo = L.polyline(pts, { color:"#fff", weight:7, opacity:.75 });
     const arrow = arrowHead(pts[0], pts[1], col);
-    const lbl = (S.labels ? esc(f.name) + "<br>" : "") + esc(fmtDist(dist(pts[0], pts[1]))) + "<br>" + esc(fmtAng(bearing(pts[0], pts[1]), pts[0]));
+    const dirTxt = f.kind === "vector" ? fmtVecAng(f, bearing(pts[0], pts[1]), pts[0]) : fmtAng(bearing(pts[0], pts[1]), pts[0]);
+    const lbl = (S.labels ? esc(f.name) + "<br>" : "") + esc(fmtDist(dist(pts[0], pts[1]))) + "<br>" + esc(dirTxt);
     arrow.bindTooltip(lbl, { permanent:true, direction:"right", offset:[12, 0], className:"mlabel" });
     o = L.featureGroup([halo, line, arrow, L.circleMarker(pts[0], { radius:4, color:col, weight:2, fillColor:"#fff", fillOpacity:1 })]);
   }
@@ -4526,7 +4555,7 @@ function popupFor(fid){
   } else if (f.kind === "measure" || f.kind === "vector"){
     const d = dist(pts[0], pts[1]), b = bearing(pts[0], pts[1]);
     add("Distance", fmtDist(d) + " (" + fmtNM(d) + ")");
-    add(dirLabel, fmtAng(b, pts[0]));
+    add(dirLabel, f.kind === "vector" ? fmtVecAng(f, b, pts[0]) : fmtAng(b, pts[0]));
     add("Start", mgrs(pts[0]), true); add("End", mgrs(pts[1]), true);
     copyAll = mgrs(pts[0]) + "\n" + mgrs(pts[1]); copyLabel = "Copy start and end";
   }
@@ -4536,16 +4565,18 @@ function popupFor(fid){
     // distance and direction can be changed here
     const fm = document.createElement("div"); fm.className = "vedit";
     fm.innerHTML = '<label>Distance <span class="iw"><input type="text" inputmode="decimal" class="vd"><select class="vu"><option value="1">m</option><option value="1000">km</option><option value="1852">NM</option></select></span></label>' +
-      '<label>' + esc(dirLabel) + ' <span class="iw"><input type="text" class="va"><span class="u"></span></span></label><button type="button" class="btn sm">Apply</button>';
-    const u = f.d >= 1000 ? 1000 : 1;
+      '<label>' + esc(dirLabel) + ' <span class="iw"><input type="text" class="va"><select class="vau" aria-label="Direction unit"></select></span></label><button type="button" class="btn sm">Apply</button>';
+    const u = f.d >= 1000 ? 1000 : 1, du = f.u && DIR_UNITS.some(x => x[0] === f.u) ? f.u : curInU();
     fm.querySelector(".vu").value = String(u); fm.querySelector(".vd").value = +(f.d / u).toFixed(3);
-    fm.querySelector(".va").value = fmtAngU(S.north === "grid" ? toGrid(f.az, pts[0]) : f.az, S.ang).replace(/ (mil|MOA)$/, "");
-    fm.querySelector(".u").textContent = ANG[S.ang].unit;
+    fm.querySelector(".vau").innerHTML = dirUnitOptions(du);
+    fm.querySelector(".va").value = angInput(refDeg(f.az, pts[0]), du);
+    wireUnitSelect(fm.querySelector(".va"), fm.querySelector(".vau"));
     fm.querySelector("button").onclick = () => {
       const dv = NUMV(fm.querySelector(".vd").value) * +fm.querySelector(".vu").value;
-      const av = parseAng(fm.querySelector(".va").value, S.ang);
+      const unit = fm.querySelector(".vau").value;
+      const av = parseAng(fm.querySelector(".va").value, unit);
       if (!(dv > 0) || av === null){ toast("Check the distance and direction."); return; }
-      f.d = dv; f.az = S.north === "grid" ? fromGrid(av, pts[0]) : av;
+      f.d = dv; f.az = S.north === "grid" ? fromGrid(av, pts[0]) : av; f.u = unit;
       save(); renderLayer(l); renderLayersPanel(); toast("Updated " + f.name);
       setTimeout(() => objs[f.id] && objs[f.id].openPopup(), 30);
     };
@@ -4621,17 +4652,18 @@ function openMove(ids){
   MV = { ids: ids.slice() };
   const n = ids.length, hit = n === 1 ? findFeat(ids[0]) : null;
   $("mvTitle").textContent = hit ? "Move " + hit.f.name : "Move " + n + " items";
-  $("mvAngU").textContent = ANG[S.ang].unit;
+  $("mvAngU").innerHTML = dirUnitOptions(curInU());
   $("mvDirLbl").textContent = "Direction" + (S.north === "grid" ? " (grid)" : "");
   $("mvPanel").hidden = false;
   if (!isCoarse()) setTimeout(() => $("mvDist").focus(), 30);
 }
 function closeMove(){ $("mvPanel").hidden = true; MV = null; }
 $("mvCancel").onclick = closeMove;
+wireUnitSelect($("mvDir"), $("mvAngU"));
 $("mvApply").onclick = () => {
   if (!MV) return;
   const d = NUMV($("mvDist").value) * +$("mvUnit").value;
-  const a = parseAng($("mvDir").value, S.ang);
+  const a = parseAng($("mvDir").value, $("mvAngU").value);
   if (!(d > 0) || a === null){ toast("Enter a distance and a direction."); return; }
   const h = findFeat(MV.ids[0]); const at = h ? geom(h.f)[0] : map.getCenter();
   const az = S.north === "grid" ? fromGrid(a, at) : a;
@@ -5163,7 +5195,7 @@ function finish(){
   else if (tool === "circle" && pts.length && (draft.r || draft.rTyped)) f = { kind:"circle", pts:[P(pts[0])], r: Math.round((draft.rTyped || draft.r)*10)/10 };
   else if (tool === "vector" && pts.length === 2){
     if (dist(pts[0], pts[1]) < 0.5){ pts.pop(); return; }
-    f = { kind:"vector", pts:[P(pts[0])], d: dist(pts[0], pts[1]), az: bearing(pts[0], pts[1]) };
+    f = { kind:"vector", pts:[P(pts[0])], d: dist(pts[0], pts[1]), az: bearing(pts[0], pts[1]), u: curInU() };
   }
   else if (tool === "rect" && pts.length === 2){
     if (pts[0].lat === pts[1].lat || pts[0].lng === pts[1].lng){ toast("Tap the opposite corner, not on the same line."); pts.pop(); return; }
@@ -5283,7 +5315,9 @@ function updateDrawbar(){
     if (measure.pts.length === 2) btns.push(["savemeasure", "Save measurement", "pri"]);
   }
   if (tool === "vector" && draft && draft.pts.length){
-    if (tg) h += twoPt(draft.pts[0], tg); else h += metricHTML([[mgrs(draft.pts[0]), "start"]]);
+    if (tg){ const a0 = draft.pts[0], dd = dist(a0, tg);
+      h += metricHTML([[fmtDist(dd), "distance"], [fmtNM(dd), "nautical miles"], [fmtAngU(refDeg(bearing(a0, tg), a0), curInU()), "direction" + (S.north === "grid" ? " (grid)" : "")]]); }
+    else h += metricHTML([[mgrs(draft.pts[0]), "start"]]);
   }
   if ((tool === "line" || tool === "polygon") && draft && draft.pts.length){
     const pts = tg ? draft.pts.concat([tg]) : draft.pts;
@@ -5309,15 +5343,18 @@ function updateDrawbar(){
   if (hasDraft) btns.push(["cancel", "Discard", ""]);
   btns.push(["done", "Done", hasDraft ? "" : (btns.some(b => b[2] === "pri") ? "" : "pri")]);
   h += '<div class="db-btns">';
+  if (tool === "vector") h += '<label class="radius">Direction in <select id="dbU" aria-label="Direction unit">' + dirUnitOptions(curInU()) + '</select></label>';
   if (tool === "circle" && hasDraft) h += '<label class="radius">Radius <input type="number" id="rIn" min="0" step="any" inputmode="decimal" placeholder="km" value="' + (draft.rTyped ? +(draft.rTyped/1000).toFixed(3) : "") + '"> km</label>';
   btns.forEach(([k, label, cls, dis]) => { h += '<button type="button" class="dbtn ' + cls + '" data-a="' + k + '"' + (dis ? " disabled" : "") + '>' + label + '</button>'; });
   h += '</div><div class="db-flash" aria-live="polite"></div>';
-  const focused = document.activeElement && document.activeElement.id === "rIn";
-  if (focused) return; // keep the radius field stable while typing
+  const ae = document.activeElement;
+  if (ae && (ae.id === "rIn" || ae.id === "dbU")) return; // keep fields stable while in use
   bar.innerHTML = h; bar.hidden = false; bar.classList.toggle("min", dbMin);
   const rIn = $("rIn");
   if (rIn) rIn.addEventListener("input", () => { const v = parseFloat(rIn.value.replace(",", ".")); draft.rTyped = v > 0 ? v*1000 : 0; drawDraft();
     bar.querySelector('[data-a=finish]').disabled = !draft.rTyped; });
+  const dbU = $("dbU");
+  if (dbU) dbU.addEventListener("change", () => { S.inU = dbU.value; save(); dbU.blur(); updateDrawbar(); });
   if (rIn) rIn.addEventListener("keydown", e => { if (e.key === "Enter" && draft.rTyped){ rIn.blur(); finish(); } });
 }
 function setPlace(m){
@@ -5727,9 +5764,10 @@ function openCoordPanel(kind, opts){
     $("cpRU").value = r && r < 1000 ? "1" : "1000";
     $("cpR").value = r ? +(r / +$("cpRU").value).toFixed(3) : "";
   }
+  $("cpDirU").innerHTML = dirUnitOptions(opts.dirU && DIR_UNITS.some(x => x[0] === opts.dirU) ? opts.dirU : curInU());
   if (opts.dir !== undefined){
     const at = opts.dirAt || map.getCenter();
-    $("cpDir").value = opts.dir === null ? "" : fmtAngU(S.north === "grid" ? toGrid(opts.dir, at) : opts.dir, S.ang).replace(/ (mil|MOA)$/, "");
+    $("cpDir").value = opts.dir === null ? "" : angInput(refDeg(opts.dir, at), $("cpDirU").value);
   }
   CP.layer = S.active;
   CP.open = true;
@@ -5758,7 +5796,6 @@ function cpRender(){
   $("cpRLbl").textContent = CP.kind === "vector" ? "Distance" : "Radius";
   $("cpDirRow").hidden = CP.kind !== "vector";
   $("cpDirLbl").textContent = "Direction" + (S.north === "grid" ? " (grid)" : "");
-  $("cpDirU").textContent = ANG[S.ang].unit;
   const linked = hit && hit.f.refs;
   $("cpLinkNote").hidden = !linked;
   $("cpLayerWrap").hidden = !!hit;
@@ -5799,7 +5836,7 @@ function cpUpdate(){
   // validation
   let msg = cpCount(pts.length, "coordinate") + " read", bad = "", extra = "";
   const need = { line:2, polygon:3, circle:1, rect:2, measure:2, vector:1 }[k];
-  const vDir = k === "vector" ? parseAng($("cpDir").value, S.ang) : null;
+  const vDir = k === "vector" ? parseAng($("cpDir").value, $("cpDirU").value) : null;
   if ((k === "point" || k === "symbol") && CP.edit && pts.length !== 1) bad = "Enter exactly one coordinate.";
   else if (need && pts.length < need) bad = k === "circle" ? "Enter the center coordinate." : "Enter at least " + need + " coordinates.";
   else if (k === "circle" && pts.length > 1) bad = "Enter only the center coordinate.";
@@ -5871,7 +5908,7 @@ function cpCommit(){
     const f = hit.f;
     if (f.refs) delete f.refs;
     if (k === "circle"){ f.pts = [P(pts[0])]; f.r = Math.round(cpRadius()*10)/10; }
-    else if (k === "vector"){ f.pts = [P(pts[0])]; f.d = CP.vec.d; f.az = CP.vec.az; }
+    else if (k === "vector"){ f.pts = [P(pts[0])]; f.d = CP.vec.d; f.az = CP.vec.az; f.u = $("cpDirU").value; }
     else if (k === "point" || k === "symbol") f.pts = [P(pts[0])];
     else f.pts = pts.map(P);
     if (nm) f.name = nm;
@@ -5893,7 +5930,7 @@ function cpCommit(){
   else if (k === "circle") added.push(addFeature({ kind:"circle", name: nm || autoName("circle"), pts:[P(pts[0])], r: Math.round(cpRadius()*10)/10 }, true));
   else if (k === "rect") added.push(addFeature({ kind:"rect", name: nm || autoName("rect"), pts:[P(pts[0]), P(pts[1])] }, true));
   else if (k === "measure") added.push(addFeature({ kind:"measure", name: nm || autoName("measure"), pts:[P(pts[0]), P(pts[1])] }, true));
-  else if (k === "vector") added.push(addFeature({ kind:"vector", name: nm || autoName("vector"), pts:[P(pts[0])], d: CP.vec.d, az: CP.vec.az }, true));
+  else if (k === "vector") added.push(addFeature({ kind:"vector", name: nm || autoName("vector"), pts:[P(pts[0])], d: CP.vec.d, az: CP.vec.az, u: $("cpDirU").value }, true));
   const l = activeLayer();
   if (CP.layer !== prev){ S.active = CP.layer; save(); renderLayersPanel(); }
   toast(added.length === 1 ? added[0].name + " saved to " + l.name : "Added " + added.length + " items to " + l.name);
@@ -5912,7 +5949,7 @@ function editCoords(fid){
   const hit = findFeat(fid); if (!hit) return;
   const f = hit.f;
   openCoordPanel(f.kind, { edit: fid, text: featCoordText(f), name: f.name, r: f.kind === "circle" ? f.r : f.kind === "vector" ? f.d : undefined,
-    dir: f.kind === "vector" ? f.az : undefined, dirAt: LL(f.pts[0]), zoom: true });
+    dir: f.kind === "vector" ? f.az : undefined, dirU: f.u, dirAt: LL(f.pts[0]), zoom: true });
 }
 let cpTimer = 0;
 $("cpText").addEventListener("input", () => { clearTimeout(cpTimer); cpTimer = setTimeout(cpUpdate, 150); });
@@ -5921,6 +5958,7 @@ $("cpLonFirst").onchange = cpUpdate;
 $("cpR").addEventListener("input", cpUpdate);
 $("cpRU").onchange = cpUpdate;
 $("cpDir").addEventListener("input", cpUpdate);
+wireUnitSelect($("cpDir"), $("cpDirU"), cpUpdate);
 $("cpLayer").onchange = e => { CP.layer = e.target.value; cpUpdate(); };
 $("cpAdd").onclick = cpCommit;
 $("cpZoom").onclick = cpZoom;
