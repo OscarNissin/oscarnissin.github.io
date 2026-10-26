@@ -4657,6 +4657,23 @@ function popupFor(fid){
     };
     box.appendChild(fm);
   }
+  if (f.kind === "circle"){
+    const fm = document.createElement("div"); fm.className = "vedit";
+    const u = radUnitFor(f.r);
+    fm.innerHTML = '<label>Radius <span class="iw"><input type="text" inputmode="decimal" class="cr" aria-label="Radius"><select class="cru" aria-label="Radius unit">' + radOptions(u) + '</select></span></label><button type="button" class="btn sm">Apply</button>';
+    const inp = fm.querySelector(".cr"), us = fm.querySelector(".cru");
+    inp.value = radValue(f.r, u);
+    wireRadUnit(inp, us);
+    const apply = () => {
+      if (setCircleRadius(f.id, NUMV(inp.value) * +us.value)){
+        toast("Radius of " + f.name + " is now " + fmtDist(f.r));
+        setTimeout(() => objs[f.id] && objs[f.id].openPopup(), 30);
+      }
+    };
+    fm.querySelector("button").onclick = apply;
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") apply(); });
+    box.appendChild(fm);
+  }
   if ((f.kind === "line" || f.kind === "polygon") && pts.length > 1){
     const legs = document.createElement("div"); legs.className = "legs";
     const ring = f.kind === "polygon" ? pts.concat([pts[0]]) : pts, vn = vertexNames(f);
@@ -4689,6 +4706,29 @@ function popupFor(fid){
   mk("Delete", "danger", () => deleteFeature(f.id));
   box.appendChild(btns);
   return box;
+}
+
+/* radius fields (circle details and edit bar) */
+const radUnitFor = r => r >= 1000 ? 1000 : 1;
+const radOptions = u => [["1","m"],["1000","km"],["1852","NM"]].map(([v, l]) => '<option value="' + v + '"' + (+v === u ? " selected" : "") + '>' + l + '</option>').join("");
+const radValue = (r, u) => String(+(r / u).toFixed(u === 1 ? 1 : 3));
+// keep the number meaning the same distance when the unit changes
+function wireRadUnit(input, select){
+  let prev = +select.value;
+  select.addEventListener("focus", () => { prev = +select.value; });
+  select.addEventListener("change", () => {
+    const v = NUMV(input.value);
+    if (v > 0) input.value = radValue(v * prev, +select.value);
+    prev = +select.value;
+  });
+}
+function setCircleRadius(fid, r){
+  const hit = findFeat(fid); if (!hit || hit.f.kind !== "circle") return false;
+  if (!(r > 0)){ toast("Enter a radius greater than zero."); return false; }
+  hit.f.r = Math.round(r * 10) / 10;
+  save(); renderLayer(hit.l); renderLayersPanel();
+  if (EDIT && EDIT.fid === fid) drawHandles();
+  return true;
 }
 
 /* ================= moving ================= */
@@ -4806,7 +4846,7 @@ function drawHandles(){
   } else if (f.kind === "circle"){
     const c = LL(f.pts[0]), edge = destPoint(c, 90, f.r);
     mkH(c, "", ll => { if (o) o.setLatLng(ll); }, ll => { f.pts[0] = P(ll); commit(); });
-    mkH(L.latLng(edge.lat, edge.lng), "mid", ll => { if (o) o.setRadius(dist(LL(f.pts[0]), ll)); },
+    mkH(L.latLng(edge.lat, edge.lng), "mid", ll => { const r = dist(LL(f.pts[0]), ll); if (o) o.setRadius(r); const inp = $("erIn"); if (inp) inp.value = radValue(r, +$("erU").value); },
       ll => { f.r = Math.round(dist(LL(f.pts[0]), ll)*10)/10; commit(); });
   } else if (f.kind === "measure" || f.kind === "vector"){
     const pts = geom(f);
@@ -5363,6 +5403,8 @@ function metricHTML(list){ return '<div class="db-metrics">' + list.map(([v, k])
 function updateDrawbar(){
   const bar = $("drawbar");
   if (EDIT){
+    const ae0 = document.activeElement;
+    if (ae0 && (ae0.id === "erIn" || ae0.id === "erU")) return;
     const hit = findFeat(EDIT.fid);
     if (!hit){ EDIT = null; }
     else {
@@ -5370,7 +5412,17 @@ function updateDrawbar(){
       const lineish = hit.f.kind === "line" || hit.f.kind === "polygon";
       bar.innerHTML = '<div class="db-head"><span class="db-title">Edit ' + esc(hit.f.name) + '</span></div><p class="db-hint">Drag the white handles.' +
         (lineish && !hit.f.refs ? " Drag a small handle to add a corner. Double-click a corner to remove it." : "") +
-        (hit.f.refs ? " Moving a corner moves the linked point." : "") + '</p><div class="db-btns"><button type="button" class="dbtn pri" data-a="editdone">Done</button></div>';
+        (hit.f.refs ? " Moving a corner moves the linked point." : "") +
+        (hit.f.kind === "circle" ? " Drag the middle to move it, the edge handle to resize it, or type the radius." : "") + '</p><div class="db-btns">' +
+        (hit.f.kind === "circle" ? '<label class="radius">Radius <input type="text" inputmode="decimal" id="erIn" aria-label="Radius"><select id="erU" aria-label="Radius unit">' + radOptions(radUnitFor(hit.f.r)) + '</select></label><button type="button" class="dbtn" data-a="erapply">Apply</button>' : "") +
+        '<button type="button" class="dbtn pri" data-a="editdone">Done</button></div>';
+      if (hit.f.kind === "circle"){
+        const inp = $("erIn"), us = $("erU");
+        inp.value = radValue(hit.f.r, +us.value);
+        wireRadUnit(inp, us);
+        inp.addEventListener("input", () => { const r = NUMV(inp.value) * +us.value, o = objs[hit.f.id]; if (r > 0 && o && o.setRadius) o.setRadius(r); });
+        inp.addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); if (setCircleRadius(hit.f.id, NUMV(inp.value) * +us.value)) updateDrawbar(); } });
+      }
       return;
     }
   }
@@ -5431,7 +5483,7 @@ function updateDrawbar(){
   btns.forEach(([k, label, cls, dis]) => { h += '<button type="button" class="dbtn ' + cls + '" data-a="' + k + '"' + (dis ? " disabled" : "") + '>' + label + '</button>'; });
   h += '</div><div class="db-flash" aria-live="polite"></div>';
   const ae = document.activeElement;
-  if (ae && (ae.id === "rIn" || ae.id === "dbU")) return; // keep fields stable while in use
+  if (ae && (ae.id === "rIn" || ae.id === "dbU" || ae.id === "erIn" || ae.id === "erU")) return; // keep fields stable while in use
   bar.innerHTML = h; bar.hidden = false; bar.classList.toggle("min", dbMin);
   const rIn = $("rIn");
   if (rIn) rIn.addEventListener("input", () => { const v = parseFloat(rIn.value.replace(",", ".")); draft.rTyped = v > 0 ? v*1000 : 0; drawDraft();
@@ -5450,7 +5502,12 @@ $("drawbar").addEventListener("click", e => {
   const b = e.target.closest("[data-a]"); if (!b) return;
   const a = b.dataset.a;
   if (a === "done") setTool("pan");
-  else if (a === "editdone") stopEditShape();
+  else if (a === "editdone"){
+    const inp = $("erIn");
+    if (inp && EDIT){ const hit = findFeat(EDIT.fid), r = NUMV(inp.value) * +$("erU").value; if (hit && r > 0 && Math.abs(r - hit.f.r) > 0.05) setCircleRadius(EDIT.fid, r); }
+    stopEditShape();
+  }
+  else if (a === "erapply"){ if (EDIT && setCircleRadius(EDIT.fid, NUMV($("erIn").value) * +$("erU").value)) updateDrawbar(); }
   else if (a === "min"){ dbMin = !dbMin; updateDrawbar(); }
   else if (a === "mode"){ const ks = Object.keys(PLACE); setPlace(ks[(ks.indexOf(S.place) + 1) % ks.length]); toast("Placing: " + PLACE[S.place].toLowerCase()); }
   else if (a === "finish"){ if (tool === "circle" && draft) draft.r = draft.rTyped; finish(); }
