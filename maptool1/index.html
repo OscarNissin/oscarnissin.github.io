@@ -972,6 +972,11 @@ tr:hover td,tr.hl td{background:var(--sel)}
 .leaflet-tooltip.cpnum:before{display:none}
 
 /* v3 additions */
+.lifted .pt,.pt.lifted{transform:scale(1.35)}
+.leaflet-marker-icon.lifted{filter:drop-shadow(0 6px 6px rgba(0,0,0,.4));z-index:3000!important}
+.leaflet-marker-icon.lifted .vh{transform:scale(1.3);border-color:var(--pin,#e8a400)}
+.vh.holdh{border-style:solid}
+
 .searchbox{position:absolute;z-index:1170;top:12px;left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 200px));max-height:calc(100% - 24px);display:flex;flex-direction:column;background:var(--panel);border-radius:10px;box-shadow:0 6px 26px rgba(15,36,48,.35);overflow:hidden}
 .searchbox[hidden]{display:none}
 .sr-in{display:flex;align-items:center;gap:.5rem;padding:.35rem .35rem .35rem .8rem;background:#fff;border-bottom:1px solid var(--line)}
@@ -1256,11 +1261,18 @@ tr:hover td,tr.hl td{background:var(--sel)}
         <div class="settings">
           <h2 class="sub">Placing things on the map</h2>
           <div class="radios">
-            <label><input type="radio" name="place" value="tap"> <b>Tap</b> the map</label>
-            <label><input type="radio" name="place" value="hold"> <b>Hold</b> on the map for half a second (no accidental taps)</label>
-            <label><input type="radio" name="place" value="cross"> <b>Crosshair</b> only: move the map, then press Add</label>
+            <label><input type="radio" name="place" value="tap"><span><b>Tap</b> the map</span></label>
+            <label><input type="radio" name="place" value="hold"><span><b>Hold</b> on the map for half a second (no accidental taps)</span></label>
+            <label><input type="radio" name="place" value="cross"><span><b>Crosshair</b> only: move the map, then press Add</span></label>
           </div>
-          <div class="row"><label><input type="checkbox" id="setDrag"> Points and symbols can be dragged</label></div>
+        </div>
+        <div class="settings">
+          <h2 class="sub">Moving points and corners</h2>
+          <div class="radios">
+            <label><input type="radio" name="dragmode" value="hold"><span><b>Hold, then drag:</b> hold still until the point lifts. Prevents accidental moves.</span></label>
+            <label><input type="radio" name="dragmode" value="now"><span><b>Drag</b> straight away</span></label>
+            <label><input type="radio" name="dragmode" value="off"><span><b>Off:</b> move only with Move…, Edit shape or Edit coordinates</span></label>
+          </div>
         </div>
         <div class="settings">
           <h2 class="sub">Map</h2>
@@ -3967,6 +3979,7 @@ function load(){
   if (!S.layers.some(l => l.id === S.active)) S.active = S.layers[0].id;
   if (!PLACE_MODES.includes(S.place)) S.place = window.matchMedia("(pointer:coarse)").matches ? "hold" : "tap";
   if (!ANG[S.ang]) S.ang = "deg";
+  if (!["hold","now","off"].includes(S.dragMode)) S.dragMode = S.drag === false ? "off" : "hold";
 }
 const PLACE_MODES = ["tap","hold","cross"];
 let saveWarned = false;
@@ -4400,6 +4413,62 @@ $("sidc").addEventListener("input", e => {
 $("sidc").addEventListener("change", () => { renderSymPicker(); });
 $("placeSym").onclick = () => setTool("symbol");
 
+/* ================= hold, then drag ================= */
+// A marker only starts moving after it has been held still for a moment. A quick touch or swipe pans the map as usual.
+const HOLD_MS = 450;
+function showHoldRing(x, y){
+  const ring = $("holdRing"), r = $("mapwrap").getBoundingClientRect();
+  ring.style.left = (x - r.left) + "px"; ring.style.top = (y - r.top) + "px";
+  ring.classList.remove("on"); void ring.offsetWidth; ring.classList.add("on");
+}
+function hideHoldRing(){ $("holdRing").classList.remove("on"); }
+function holdDrag(m, cb){
+  const attach = () => {
+    const el = m.getElement(); if (!el || el._hd) return; el._hd = true;
+    el.addEventListener("contextmenu", e => e.preventDefault());
+    el.addEventListener("pointerdown", e => {
+      if (!e.isPrimary || (e.pointerType === "mouse" && e.button !== 0) || tool !== "pan") return;
+      const id = e.pointerId, x0 = e.clientX, y0 = e.clientY;
+      let armed = false, mapWasDraggable = map.dragging.enabled();
+      showHoldRing(x0, y0);
+      const t = setTimeout(() => {
+        armed = true; hideHoldRing();
+        if (mapWasDraggable) map.dragging.disable();
+        el.classList.add("lifted");
+        if (navigator.vibrate) try { navigator.vibrate(20); } catch(err){}
+        if (cb.onStart) cb.onStart();
+      }, HOLD_MS);
+      const move = ev => {
+        if (ev.pointerId !== id) return;
+        if (!armed){ if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 8) stop(); return; }
+        ev.preventDefault();
+        const ll = map.mouseEventToLatLng(ev); m.setLatLng(ll); if (cb.onDrag) cb.onDrag(ll);
+      };
+      const up = ev => {
+        if (ev.pointerId !== id) return;
+        const was = armed; stop();
+        if (was){
+          setTimeout(() => m.closePopup && m.closePopup(), 0); // the release is not a tap
+          cb.onEnd(m.getLatLng());
+        }
+      };
+      function stop(){
+        clearTimeout(t); hideHoldRing(); el.classList.remove("lifted");
+        document.removeEventListener("pointermove", move, true);
+        document.removeEventListener("pointerup", up, true);
+        document.removeEventListener("pointercancel", up, true);
+        if (armed && mapWasDraggable) map.dragging.enable();
+        armed = false;
+      }
+      document.addEventListener("pointermove", move, true);
+      document.addEventListener("pointerup", up, true);
+      document.addEventListener("pointercancel", up, true);
+    });
+  };
+  m.on("add", attach);
+  if (m.getElement()) attach(); // already on the map
+}
+
 /* ================= features on the map ================= */
 const groups = {}, objs = {};
 const KIND = { point:"Point", symbol:"Symbol", line:"Line", polygon:"Polygon", circle:"Circle", rect:"Rectangle", measure:"Measurement", vector:"Vector" };
@@ -4455,10 +4524,10 @@ function makeObj(f, layer){
   const c = layer.color, pts = geom(f), sel = SEL.includes(f.id);
   let o;
   if (f.kind === "point"){
-    o = L.marker(pts[0], { draggable: S.drag, icon: L.divIcon({ className:"", html:'<span class="pt' + (sel ? " sel" : "") + '" style="--c:' + c + '"></span>', iconSize:[18,18], iconAnchor:[9,9], popupAnchor:[0,-8], tooltipAnchor:[0,-10] }) });
+    o = L.marker(pts[0], { draggable: S.dragMode === "now", icon: L.divIcon({ className:"", html:'<span class="pt' + (sel ? " sel" : "") + '" style="--c:' + c + '"></span>', iconSize:[18,18], iconAnchor:[9,9], popupAnchor:[0,-8], tooltipAnchor:[0,-10] }) });
   } else if (f.kind === "symbol"){
     const r = symRender(f.sym);
-    o = L.marker(pts[0], { draggable: S.drag, icon: L.divIcon({ className:"symi" + (sel ? " sel" : ""), html:r.svg, iconSize:[r.size.width, r.size.height], iconAnchor:[r.anchor.x, r.anchor.y], popupAnchor:[0, -r.anchor.y + 4], tooltipAnchor:[0, -r.anchor.y] }) });
+    o = L.marker(pts[0], { draggable: S.dragMode === "now", icon: L.divIcon({ className:"symi" + (sel ? " sel" : ""), html:r.svg, iconSize:[r.size.width, r.size.height], iconAnchor:[r.anchor.x, r.anchor.y], popupAnchor:[0, -r.anchor.y + 4], tooltipAnchor:[0, -r.anchor.y] }) });
   } else if (f.kind === "line"){
     if (pts.length < 2) return null;
     o = L.polyline(pts, { color:c, weight:3.5, opacity:.95, dashArray: f.refs ? "10 5" : null });
@@ -4481,6 +4550,10 @@ function makeObj(f, layer){
   }
   if (!o) return null;
   o.bindPopup(() => popupFor(f.id), { maxWidth:320, minWidth:240, autoPanPaddingTopLeft:[16, isMobile() ? 70 : 20], autoPanPaddingBottomRight:[16, 20] });
+  if (!isPointLike(f)){
+    o.on("popupopen", e => quietEdit(f.id, e.popup.getLatLng()));
+    o.on("popupclose", () => quietEditClosed(f.id));
+  }
   if (f.kind === "measure" || f.kind === "vector"){
     // label sits on the arrowhead
   } else if (S.labels || f.kind !== "symbol"){
@@ -4488,6 +4561,7 @@ function makeObj(f, layer){
   }
   if (isPointLike(f)){
     o.on("dragend", () => { setPointPos(f.id, o.getLatLng()); });
+    if (S.dragMode === "hold") holdDrag(o, { onEnd: ll => setPointPos(f.id, ll) });
   }
   return o;
 }
@@ -4698,6 +4772,13 @@ function popupFor(fid){
   if (f.kind === "symbol") mk("Edit symbol", "ghost", () => {
     SYM = Object.assign({}, SYM_DEF, f.sym); symEditId = f.id; symCat = SYM.set; map.closePopup(); renderSymPicker(); showTab("symbols", true);
   });
+  if (!isPointLike(f) && S.dragMode !== "off"){
+    const hint = document.createElement("p"); hint.className = "small"; hint.style.margin = "0 0 .5rem";
+    const verb = S.dragMode === "hold" ? "Hold a white handle until it lifts, then drag" : "Drag a white handle";
+    hint.textContent = verb + (f.kind === "circle" ? " to move or resize it." : f.refs ? " to move that point." : " to move a corner.") +
+      " If this box covers a corner, close it: the handles stay until you tap the map.";
+    box.appendChild(hint);
+  }
   mk("Move…", "ghost", () => openMove([f.id]));
   if (!isPointLike(f)) mk("Edit shape", "ghost", () => startEditShape(f.id));
   mk("Edit coordinates", "ghost", () => editCoords(f.id));
@@ -4804,16 +4885,43 @@ function startEditShape(fid){
   drawHandles(); updateDrawbar();
 }
 function stopEditShape(){ EDIT = null; editLayer.clearLayers(); updateDrawbar(); }
+// When a shape's details are open, its corners can be dragged straight away (if dragging is on)
+function quietEdit(fid, at){
+  const hit = findFeat(fid); if (!hit || isPointLike(hit.f) || S.dragMode === "off" || tool !== "pan") return;
+  if (EDIT && !EDIT.quiet) return;
+  if (EDIT && EDIT.fid === fid){ EDIT.at = at; return; }
+  EDIT = { fid, quiet:true, at };
+  drawHandles();
+}
+// Closing the details keeps the handles, because on a phone the details often cover the corners.
+// The handles go away when you tap empty map, open something else, or pick a tool.
+function quietEditClosed(fid){ /* handles stay until the map is tapped */ }
+map.on("popupopen", e => { if (EDIT && EDIT.quiet && objs[EDIT.fid] !== e.popup._source) stopEditShape(); });
+map.on("click", () => { if (EDIT && tool === "pan") stopEditShape(); });
 function drawHandles(){
   editLayer.clearLayers();
   if (!EDIT) return;
   const hit = findFeat(EDIT.fid); if (!hit){ stopEditShape(); return; }
   const f = hit.f, o = objs[f.id];
-  const commit = () => { save(); renderLayer(hit.l); refreshLinked(); renderLayersPanel(); drawHandles(); };
+  const commit = all => {
+    if (EDIT) EDIT.busy = true;
+    save();
+    if (all) renderAllLayers(); else { renderLayer(hit.l); refreshLinked(); renderLayersPanel(); }
+    if (EDIT && EDIT.quiet){ const no = objs[f.id]; if (no) no.openPopup(EDIT.at || undefined); }
+    if (EDIT) EDIT.busy = false;
+    drawHandles();
+  };
+  // In Edit shape mode handles drag straight away. Handles shown just by tapping a shape follow the drag setting.
+  const direct = !EDIT.quiet || S.dragMode === "now";
   const mkH = (ll, cls, onDrag, onEnd) => {
-    const h = L.marker(ll, { draggable:true, icon: handleIcon(cls), zIndexOffset:2000, keyboard:false }).addTo(editLayer);
-    h.on("drag", e => onDrag(e.target.getLatLng()));
-    h.on("dragend", e => onEnd(e.target.getLatLng()));
+    const h = L.marker(ll, { draggable: direct, icon: handleIcon(cls + (direct ? "" : " holdh")), zIndexOffset:2000, keyboard:false }).addTo(editLayer);
+    // the first drag switches to full editing: the details close and the edit bar with Done appears
+    const start = () => { if (EDIT && EDIT.quiet){ EDIT.quiet = false; map.closePopup(); if (isMobile()) setSheet(false); updateDrawbar(); } };
+    if (direct){
+      h.on("dragstart", start);
+      h.on("drag", e => onDrag(e.target.getLatLng()));
+      h.on("dragend", e => onEnd(e.target.getLatLng()));
+    } else holdDrag(h, { onStart: start, onDrag, onEnd });
     return h;
   };
   if (f.kind === "line" || f.kind === "polygon"){
@@ -4822,7 +4930,7 @@ function drawHandles(){
     pts.forEach((p, i) => {
       const h = mkH(p, "", ll => { const q = geom(f); q[i] = ll; if (live) live.setLatLngs(q); },
         ll => {
-          if (f.refs){ const ph = findFeat(f.refs[i]); if (ph) ph.f.pts = [P(ll)]; renderAllLayers(); drawHandles(); save(); }
+          if (f.refs){ const ph = findFeat(f.refs[i]); if (ph) ph.f.pts = [P(ll)]; commit(true); }
           else { f.pts[i] = P(ll); commit(); }
         });
       if (!f.refs) h.on("dblclick", () => {
@@ -5402,7 +5510,7 @@ const HINTS = {
 function metricHTML(list){ return '<div class="db-metrics">' + list.map(([v, k]) => '<div class="metric"><b>' + esc(v) + '</b><span>' + esc(k) + '</span></div>').join("") + '</div>'; }
 function updateDrawbar(){
   const bar = $("drawbar");
-  if (EDIT){
+  if (EDIT && !EDIT.quiet){
     const ae0 = document.activeElement;
     if (ae0 && (ae0.id === "erIn" || ae0.id === "erU")) return;
     const hit = findFeat(EDIT.fid);
@@ -5670,7 +5778,7 @@ function syncSettings(){
   $("setPrec").value = String(S.digits); $("setFmt").value = S.spaced ? "1" : "0";
   $("setAng").value = S.ang; $("setNorth").value = S.north;
   document.querySelectorAll('input[name=place]').forEach(r => r.checked = r.value === S.place);
-  $("setDrag").checked = S.drag;
+  document.querySelectorAll('input[name=dragmode]').forEach(r => r.checked = r.value === S.dragMode);
   $("showLabels").checked = $("mmLabels").checked = !!S.labels;
 }
 $("setPrec").onchange = e => setCoordFmt(+e.target.value, S.spaced);
@@ -5678,7 +5786,11 @@ $("setFmt").onchange = e => setCoordFmt(S.digits, e.target.value === "1");
 $("setAng").onchange = e => { S.ang = e.target.value; save(); renderAllLayers(); updateDrawbar(); drawMeasure(); map.closePopup(); };
 $("setNorth").onchange = e => { S.north = e.target.value; save(); renderAllLayers(); updateDrawbar(); drawMeasure(); map.closePopup(); };
 document.querySelectorAll('input[name=place]').forEach(r => r.addEventListener("change", () => { if (r.checked) setPlace(r.value); }));
-$("setDrag").onchange = e => { S.drag = e.target.checked; save(); renderAllLayers(); };
+document.querySelectorAll('input[name=dragmode]').forEach(r => r.addEventListener("change", () => {
+  if (!r.checked) return;
+  S.dragMode = r.value; save(); if (EDIT && EDIT.quiet) stopEditShape(); renderAllLayers();
+  toast(r.value === "hold" ? "Hold a point or corner still, then drag." : r.value === "now" ? "Points and corners drag straight away." : "Dragging is off. Use Move… or Edit coordinates.");
+}));
 
 /* ================= sharing ================= */
 const b64u = {
