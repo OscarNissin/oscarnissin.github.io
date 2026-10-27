@@ -67,9 +67,9 @@ footer p{margin:0}
 
       <li>
         <a class="proj" href="maptool1/">
-          <h3>Map Tool for mission planning, v1.2.</h3>
+          <h3>Map Tool for mission planning</h3>
           <p>Iteration of the MGRS tool for mission planning</p>
-          <span class="meta">Web tool, updated to v1.2. 26.10.2026</span>
+          <span class="meta">Web tool, <span class="tool-version" data-src="maptool1/version.json">updated to v1.2. 26.10.2026</span></span>
         </a>
       </li>
 
@@ -90,6 +90,10 @@ footer p{margin:0}
       </li>
 
       <!--
+        Version numbers: a <span class="tool-version" data-src="FOLDER/version.json"> fills itself in from that
+        tool's version.json (see the script at the end of the page). The text inside the span is shown if the file
+        cannot be read.
+
         To add a project, copy the whole <li> block above and change three things:
         the href (folder or link), the title and description, and the meta text.
         Newest project goes on top.
@@ -104,5 +108,20 @@ footer p{margin:0}
   </footer>
 
 </div>
+<script>
+// Fill in each tool's version and update date from its version.json.
+// If the file is missing or the page is opened from disk, the text already in the span stays.
+document.querySelectorAll(".tool-version[data-src]").forEach(function (el) {
+  fetch(el.dataset.src, { cache: "no-cache" })
+    .then(function (r) { if (!r.ok) throw r.status; return r.json(); })
+    .then(function (v) {
+      if (!v || !v.version) return;
+      var p = String(v.date || "").split("-");
+      var date = p.length === 3 ? (+p[2]) + "." + (+p[1]) + "." + p[0] : "";
+      el.textContent = "v" + v.version + (date ? ", updated " + date : "");
+    })
+    .catch(function () {});
+});
+</script>
 </body>
 </html>
