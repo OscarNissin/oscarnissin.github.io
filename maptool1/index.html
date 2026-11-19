@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- MGRS map tool 2.18.1, 2026-11-19 -->
+<!-- MGRS map tool 2.20.0, 2026-11-19 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f2430">
-<meta name="version" content="2.18.1">
+<meta name="version" content="2.20.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1475,6 +1475,7 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
           <label><input type="radio" name="base" value="osm"> OpenStreetMap</label>
           <label><input type="radio" name="base" value="topo"> Topographic</label>
           <label><input type="radio" name="base" value="sat"> Aerial imagery</label>
+          <label><input type="radio" name="base" value="hybrid"> Aerial with roads and names</label>
         </fieldset>
         <fieldset><legend>Overlays</legend>
           <label><input type="checkbox" id="mmR"> <i style="background:var(--r)"></i> R areas</label>
@@ -3936,8 +3937,8 @@ const PHOTO = [{"id":"IKR1","nro":"1","name":"Taipalsaaren ampuma-alue","org":"M
 
 const WORDS = {"labels": {"metals": "Metals and stones", "plants": "Trees and plants", "berries": "Berries and mushrooms", "mammals": "Mammals", "birds": "Birds", "fish": "Fish and water life", "sky": "Weather and sky", "terrain": "Terrain and water", "tools": "Tools and things", "food": "Food"}, "fi": {"metals": ["KUPARI", "TERÄS", "SINKKI", "RAUTA", "HOPEA", "PRONSSI", "MESSINKI", "TINA", "LYIJY", "NIKKELI", "KROMI", "KOBOLTTI", "TITAANI", "MALMI", "GRANIITTI", "KVARTSI", "MARMORI", "LIUSKE", "SAVI", "HIEKKA", "SORA", "KALKKI", "GNEISSI", "MAGNEETTI", "MERIPIHKA", "HELMI", "SAFIIRI", "RUBIINI", "SMARAGDI", "TIMANTTI", "VOLFRAMI", "MAGNESIUM", "ALUMIINI", "PLATINA", "OBSIDIAANI", "JASPIS", "AKAATTI", "AMETISTI"], "plants": ["MÄNTY", "KOIVU", "HAAPA", "PIHLAJA", "LEPPÄ", "VAAHTERA", "TAMMI", "SAARNI", "LEHMUS", "JALAVA", "PAJU", "KATAJA", "KANERVA", "SAMMAL", "JÄKÄLÄ", "KAISLA", "RUOKO", "ORVOKKI", "KIELO", "VUOKKO", "LEINIKKI", "APILA", "OHDAKE", "NOKKONEN", "SANANJALKA", "KORTE", "VILLAKKO", "TUOMI", "SYREENI", "KAMOMILLA", "RUUSU", "NEILIKKA", "LUPIINI"], "berries": ["MUSTIKKA", "PUOLUKKA", "HILLA", "LAKKA", "KARPALO", "VADELMA", "MANSIKKA", "JUOLUKKA", "TYRNI", "ARONIA", "KARVIAINEN", "HERUKKA", "TATTI", "ROUSKU", "KANTARELLI", "HAPERO", "VAAPUKKA", "KORVASIENI", "MESIMARJA", "LILLUKKA"], "mammals": ["KARHU", "ILVES", "KETTU", "JÄNIS", "HIRVI", "PEURA", "PORO", "MAJAVA", "SAUKKO", "NÄÄTÄ", "KÄRPPÄ", "ORAVA", "SIILI", "MYYRÄ", "HILLERI", "AHMA", "MÄYRÄ", "LEPAKKO", "HYLJE", "NORPPA", "LUMIKKO", "PIISAMI", "SOPULI", "KAURIS", "VILLISIKA", "SUPIKOIRA", "MINKKI"], "birds": ["KOTKA", "HAUKKA", "HUUHKAJA", "PÖLLÖ", "KORPPI", "VARIS", "HARAKKA", "NÄRHI", "TIKKA", "KÄKI", "PEIPPO", "TIAINEN", "VARPUNEN", "JOUTSEN", "KURKI", "HAIKARA", "SORSA", "TELKKÄ", "KUIKKA", "KAAKKURI", "LOKKI", "TIIRA", "TEERI", "METSO", "PYY", "KIURU", "RASTAS", "SIRKKU", "KOTTARAINEN", "PÄÄSKY", "SIEPPO", "HIIRIHAUKKA", "KANAHAUKKA", "VARPUSHAUKKA", "KUOVI", "KIVITASKU"], "fish": ["HAUKI", "AHVEN", "LOHI", "TAIMEN", "SIIKA", "MUIKKU", "KUHA", "MADE", "SÄRKI", "LAHNA", "SILAKKA", "KIISKI", "HARJUS", "SALAKKA", "KAMPELA", "TURSKA", "SILLI", "SIMPUKKA", "RAPU", "ANKERIAS", "SAMMI", "NIERIÄ", "SÄYNE", "KOLMIPIIKKI"], "sky": ["TUULI", "MYRSKY", "SADE", "LUMI", "HALLA", "KUURA", "SUMU", "PILVI", "REVONTULI", "UKKONEN", "SALAMA", "TÄHTI", "AURINKO", "SATEENKAARI", "HANKI", "NIETOS", "TUISKU", "PAKKANEN", "HELLE", "RÄNTÄ", "TIHKU", "VIIMA", "PUHURI", "PUUSKA", "KOMEETTA", "METEORI", "PLANEETTA", "OTAVA", "KAAMOS", "ILTARUSKO"], "terrain": ["AALTO", "KOSKI", "PURO", "LAMPI", "SUO", "KANGAS", "HARJU", "KUMPU", "LAAKSO", "NIEMI", "SAARI", "LAHTI", "SALMI", "KARI", "LUOTO", "RINNE", "KALLIO", "LÄHDE", "JÄÄTIKKÖ", "TUNTURI", "RANTA", "KORPI", "RÄME", "NEVA", "JOKI", "VIRTA", "SUVANTO", "ROTKO", "DYYNI", "LAGUUNI", "KANJONI", "SELKÄ"], "tools": ["VASARA", "KIRVES", "SAHA", "PUUKKO", "LAPIO", "HARAVA", "VIIKATE", "AIRO", "ANKKURI", "KOMPASSI", "LYHTY", "KATTILA", "KAUHA", "KUKSA", "SUKSI", "SAUVA", "REKI", "TERVA", "KÖYSI", "SOLMU", "NAULA", "RUUVI", "MUTTERI", "SAKSET", "NEULA", "LANKA", "KELLO", "RUMPU", "KANTELE", "TORVI", "PILLI", "HUILU", "KIRNU", "VAAKA", "ALASIN", "TALTTA", "TIKAPUU", "ÄMPÄRI", "KYNTTILÄ"], "food": ["LEIPÄ", "PULLA", "PIIRAKKA", "KAKKU", "KEKSI", "PUURO", "KIISSELI", "MEHU", "KAHVI", "SUOLA", "PIPPURI", "SINAPPI", "HUNAJA", "JUUSTO", "MAKKARA", "NAKKI", "PERUNA", "PORKKANA", "NAURIS", "LANTTU", "KAALI", "SIPULI", "OMENA", "PÄÄRYNÄ", "LUUMU", "KIRSIKKA", "RUSINA", "MANTELI", "PÄHKINÄ", "KANELI", "INKIVÄÄRI"]}, "en": {"metals": ["COPPER", "IRON", "STEEL", "ZINC", "NICKEL", "COBALT", "CHROME", "BRONZE", "BRASS", "PLATINUM", "TITANIUM", "GRANITE", "QUARTZ", "MARBLE", "FLINT", "SLATE", "BASALT", "AMBER", "JADE", "OPAL", "GARNET", "TOPAZ", "ONYX", "PEWTER", "SAPPHIRE", "RUBY", "EMERALD", "TUNGSTEN", "MAGNESIUM", "OBSIDIAN", "JASPER", "AGATE", "AMETHYST", "GRAPHITE"], "plants": ["SPRUCE", "PINE", "BIRCH", "ASPEN", "ROWAN", "ALDER", "MAPLE", "OAK", "ELM", "WILLOW", "JUNIPER", "HAZEL", "CEDAR", "LARCH", "POPLAR", "BEECH", "HOLLY", "HEATHER", "FERN", "MOSS", "LICHEN", "REED", "CLOVER", "THISTLE", "IVY", "NETTLE", "TULIP", "DAISY", "LILY", "ORCHID", "LILAC", "LAVENDER", "ROSE", "CYPRESS"], "berries": ["BLUEBERRY", "LINGONBERRY", "CLOUDBERRY", "CRANBERRY", "RASPBERRY", "STRAWBERRY", "GOOSEBERRY", "CURRANT", "MUSHROOM", "CHANTERELLE", "BLACKBERRY", "ELDERBERRY", "MOREL", "TRUFFLE", "BOLETUS", "MULBERRY"], "mammals": ["BEAR", "LYNX", "WOLF", "FOX", "HARE", "MOOSE", "DEER", "BEAVER", "OTTER", "MARTEN", "ERMINE", "SQUIRREL", "BADGER", "HEDGEHOG", "WOLVERINE", "SEAL", "WALRUS", "BISON", "LEMMING", "WEASEL", "MUSKRAT", "REINDEER", "BOAR", "MINK", "RACCOON", "ELK"], "birds": ["EAGLE", "HAWK", "FALCON", "OWL", "RAVEN", "CROW", "MAGPIE", "JAY", "WOODPECKER", "CUCKOO", "FINCH", "SPARROW", "SWAN", "CRANE", "HERON", "LOON", "GULL", "TERN", "GROUSE", "PLOVER", "SWIFT", "LARK", "ROBIN", "WREN", "THRUSH", "STARLING", "PELICAN", "PUFFIN", "OSPREY", "KESTREL", "CONDOR", "CURLEW", "BUNTING"], "fish": ["PIKE", "PERCH", "SALMON", "TROUT", "WHITEFISH", "ZANDER", "BURBOT", "BREAM", "HERRING", "HADDOCK", "MACKEREL", "STURGEON", "CARP", "FLOUNDER", "MUSSEL", "CRAYFISH", "EEL", "CHAR", "GRAYLING", "OYSTER", "LOBSTER"], "sky": ["WIND", "STORM", "RAIN", "SNOW", "FROST", "MIST", "CLOUD", "THUNDER", "AURORA", "COMET", "METEOR", "BLIZZARD", "DRIZZLE", "SLEET", "GALE", "BREEZE", "TWILIGHT", "ECLIPSE", "NEBULA", "PLANET", "ZENITH", "RAINBOW", "MONSOON", "CYCLONE"], "terrain": ["RIVER", "BROOK", "POND", "MARSH", "RIDGE", "VALLEY", "ISLAND", "REEF", "DUNE", "CANYON", "MESA", "GLACIER", "FJORD", "HARBOR", "MEADOW", "ORCHARD", "QUARRY", "LAGOON", "TUNDRA", "SUMMIT", "BOULDER", "CREEK", "PRAIRIE", "PLATEAU", "CRATER", "GORGE", "RAPIDS", "CASCADE"], "tools": ["HAMMER", "AXE", "SAW", "SHOVEL", "RAKE", "ANCHOR", "COMPASS", "LANTERN", "KETTLE", "LADLE", "ROPE", "KNOT", "NAIL", "SCREW", "ANVIL", "CHISEL", "LADDER", "BUCKET", "CANDLE", "DRUM", "FLUTE", "HARP", "VIOLIN", "BARREL", "SLED", "PADDLE", "TORCH", "WHISTLE"], "food": ["BREAD", "BUN", "PIE", "CAKE", "BISCUIT", "PORRIDGE", "HONEY", "MUSTARD", "PEPPER", "CHEESE", "SAUSAGE", "POTATO", "CARROT", "TURNIP", "CABBAGE", "ONION", "APPLE", "PEAR", "PLUM", "CHERRY", "LEMON", "MANGO", "PEACH", "RAISIN", "ALMOND", "WALNUT", "CINNAMON", "GINGER", "PRETZEL"]}};
 
-/* MGRS map tool, version 2.18.1 (19 Nov 2026). Version history: guide.html#versions */
-const APP_VERSION = "2.18.1", APP_DATE = "2026-11-19";
+/* MGRS map tool, version 2.20.0 (19 Nov 2026). Version history: guide.html#versions */
+const APP_VERSION = "2.20.0", APP_DATE = "2026-11-19";
 "use strict";
 /* ================= helpers ================= */
 const $ = id => document.getElementById(id);
@@ -4221,6 +4222,17 @@ const altCoord = ll => crsOf() === "mgrs" ? ll.lat.toFixed(5) + ", " + ll.lng.to
 function newLayer(name){
   return { id: uid(), name, color: PALETTE[S.layers.length % PALETTE.length], visible: true, features: [] };
 }
+// "New layer…" in layer dropdowns: ask a name, create the layer, return it (null if cancelled)
+const NEW_LAYER = "__new__";
+function newLayerOption(){ return '<option value="' + NEW_LAYER + '">+ New layer…</option>'; }
+function createLayerPrompt(){
+  const def = "Layer " + (S.layers.length + 1);
+  const n = prompt("Name for the new layer", def);
+  if (n === null) return null;
+  const l = newLayer(n.trim() || def);
+  S.layers.push(l); save();
+  return l;
+}
 function load(){
   try { const raw = localStorage.getItem(KEY); if (raw){ const d = JSON.parse(raw); if (d && Array.isArray(d.layers)) Object.assign(S, d); } } catch(e){}
   if (!S.layers.length) S.layers.push(newLayer("Layer 1"));
@@ -4276,7 +4288,16 @@ const BASES = {
   topo: L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom:17, subdomains:"abc",
     attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, SRTM | Style &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)' }),
   sat: L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom:19,
-    attribution:"Imagery &copy; Esri, Maxar, Earthstar Geographics" })
+    attribution:"Imagery &copy; Esri, Maxar, Earthstar Geographics" }),
+  // Hybrid: the same aerial imagery with Esri's road and place-name overlays on top
+  hybrid: L.layerGroup([
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom:19,
+      attribution:"Imagery &copy; Esri, Maxar, Earthstar Geographics" }),
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}", { maxZoom:19,
+      attribution:"Roads &copy; Esri, HERE, Garmin" }),
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", { maxZoom:19,
+      attribution:"Places &copy; Esri, HERE, Garmin" })
+  ])
 };
 let baseNow = null;
 function setBase(k){
@@ -5192,8 +5213,13 @@ function popupFor(fid){
   const ly = document.createElement("label"); ly.className = "ly"; ly.textContent = "Layer";
   const sel = document.createElement("select");
   S.layers.forEach(x => { const o = document.createElement("option"); o.value = x.id; o.textContent = x.name; sel.appendChild(o); });
+  sel.insertAdjacentHTML("beforeend", newLayerOption());
   sel.value = l.id;
-  sel.onchange = () => { moveToLayer([f.id], sel.value); map.closePopup(); };
+  sel.onchange = () => {
+    let to = sel.value;
+    if (to === NEW_LAYER){ const nl = createLayerPrompt(); if (!nl){ sel.value = l.id; return; } to = nl.id; }
+    moveToLayer([f.id], to); map.closePopup();
+  };
   ly.appendChild(sel); box.appendChild(ly);
   const btns = document.createElement("div"); btns.className = "pbtns";
   const mk = (label, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn sm " + (cls || ""); b.textContent = label; b.onclick = fn; btns.appendChild(b); };
@@ -5539,7 +5565,7 @@ function renderSelBar(){
   const pts = selFeats().filter(h => isPointLike(h.f)).length;
   bar.innerHTML = '<div class="sb-top"><b>' + n + ' selected</b><button type="button" class="linkbtn" data-s="clear">Clear</button></div>' +
     '<div class="sb-acts">' +
-    '<label class="sb-move">Move to <select data-s="layer"><option value="">layer…</option>' + S.layers.map(l => '<option value="' + l.id + '">' + esc(l.name) + '</option>').join("") + '</select></label>' +
+    '<label class="sb-move">Move to <select data-s="layer"><option value="">layer…</option>' + S.layers.map(l => '<option value="' + l.id + '">' + esc(l.name) + '</option>').join("") + newLayerOption() + '</select></label>' +
     '<button type="button" class="btn ghost sm" data-s="copy">Copy coordinates</button>' +
     '<button type="button" class="btn ghost sm" data-s="move">Move by distance…</button>' +
     '<button type="button" class="btn ghost sm" data-s="line"' + (pts < 2 ? " disabled" : "") + '>Line from points</button>' +
@@ -5561,7 +5587,10 @@ $("selBar").addEventListener("click", e => {
   }
 });
 $("selBar").addEventListener("change", e => {
-  if (e.target.dataset.s === "layer" && e.target.value) moveToLayer(SEL.slice(), e.target.value);
+  if (e.target.dataset.s !== "layer" || !e.target.value) return;
+  let to = e.target.value;
+  if (to === NEW_LAYER){ const nl = createLayerPrompt(); if (!nl){ e.target.value = ""; return; } to = nl.id; }
+  moveToLayer(SEL.slice(), to);
 });
 
 /* ================= layers panel ================= */
@@ -6742,6 +6771,7 @@ function cpRender(){
   $("cpFileBtn").hidden = !!hit;
   const sel = $("cpLayer"); sel.innerHTML = "";
   S.layers.forEach(l => { const o = document.createElement("option"); o.value = l.id; o.textContent = l.name; sel.appendChild(o); });
+  sel.insertAdjacentHTML("beforeend", newLayerOption());
   if (!layerOf(CP.layer)) CP.layer = S.active;
   sel.value = CP.layer;
   $("cpName").placeholder = (CP.kind === "point" || CP.kind === "symbol") && !hit ? "Optional, used when a line has no name" : "Optional";
@@ -6938,7 +6968,14 @@ $("cpDir").addEventListener("input", cpUpdate);
 $("cpCrs").innerHTML = crsOptions();
 $("cpCrs").onchange = e => setCrs(e.target.value, true);
 wireUnitSelect($("cpDir"), $("cpDirU"), cpUpdate);
-$("cpLayer").onchange = e => { CP.layer = e.target.value; cpUpdate(); };
+$("cpLayer").onchange = e => {
+  if (e.target.value === NEW_LAYER){
+    const nl = createLayerPrompt();
+    if (nl){ CP.layer = nl.id; renderAllLayers(); } 
+    cpRender(); return;
+  }
+  CP.layer = e.target.value; cpUpdate();
+};
 $("cpAdd").onclick = cpCommit;
 $("cpZoom").onclick = cpZoom;
 $("cpCancel").onclick = closeCoordPanel;

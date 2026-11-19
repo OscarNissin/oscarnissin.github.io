@@ -524,7 +524,7 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
         <div>
           <h3>Keeping areas out of the way</h3>
           <p>The <b>lock</b> button in the map controls makes the areas ignore taps, so they no longer open when you tap near them while drawing. They stay visible.</p>
-          <p>The map menu (the stacked-layers button) hides R or D areas, or all of them at once, and switches the background between OpenStreetMap, a topographic map and aerial imagery.</p>
+          <p>The map menu (the stacked-layers button) hides R or D areas, or all of them at once, and switches the background between OpenStreetMap, a topographic map, aerial imagery, or aerial imagery with roads and names.</p>
         </div>
       </div>
       <div class="note warn"><p>The area data is unofficial and not for navigation. Always check the current AIP, NOTAMs, Flyk.com and Traficom publications.</p></div>
@@ -626,6 +626,8 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
       <p class="intro">The version you have is shown at the bottom of the Settings tab. Numbers go major.minor.patch: the middle number grows with new features, the last one with fixes only.</p>
       <p>If your phone shows an older number than the newest one here, reload the page. Browsers sometimes keep an old copy for a while.</p>
       <ol class="versions">
+        <li><div class="vh2"><b>2.20.0</b><span>19 Nov 2026</span></div><ul><li>“New layer…” in every layer dropdown: in a drawing's details, in the selection bar and in the coordinate panel. It creates the layer and moves the item into it in one step.</li></ul></li>
+        <li><div class="vh2"><b>2.19.0</b><span>19 Nov 2026</span></div><ul><li>New background map: aerial imagery with roads, street names and place names on top.</li></ul></li>
         <li><div class="vh2"><b>2.18.1</b><span>19 Nov 2026</span></div><ul><li>New site icon: a reticle on a map grid, easier to recognise in a browser tab.</li></ul></li>
         <li><div class="vh2"><b>2.18.0</b><span>19 Nov 2026</span></div><ul><li>Weather: rain radar (now and the last 2 h) and wind forecast arrows (next 48 h) on the map, with a time slider, and an hourly forecast for any spot you tap. Wind in m/s or knots.</li></ul></li>
         <li><div class="vh2"><b>2.17.0</b><span>19 Nov 2026</span></div><ul><li>Background data downloads in Settings: R areas, D areas, UAS zones, aerial photography restriction areas, or everything in one file, as GeoJSON, KML or KMZ.</li></ul></li>
@@ -654,7 +656,7 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
   </main>
 </div>
 
-<footer><div class="in"><span>Guide for version 2.18.1. <a href="../">Oscar Nissin</a>. Symbols drawn with milsymbol (MIT). Maps © OpenStreetMap contributors, OpenTopoMap, Esri.</span><a href="./">Open the map tool</a></div></footer>
+<footer><div class="in"><span>Guide for version 2.20.0. <a href="../">Oscar Nissin</a>. Symbols drawn with milsymbol (MIT). Maps © OpenStreetMap contributors, OpenTopoMap, Esri.</span><a href="./">Open the map tool</a></div></footer>
 
 <dialog class="lb" id="lb" aria-label="Enlarged picture"><button type="button" id="lbClose" aria-label="Close">×</button><img id="lbImg" alt=""></dialog>
 <script>
