@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- MGRS map tool 2.14.0, 2026-10-30 -->
+<!-- MGRS map tool 2.16.0, 2026-11-19 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f2430">
-<meta name="version" content="2.14.0">
+<meta name="version" content="2.16.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -974,6 +974,27 @@ tr:hover td,tr.hl td{background:var(--sel)}
 .leaflet-tooltip.cpnum:before{display:none}
 
 /* v3 additions */
+.pop .pcrs{display:flex;align-items:center;gap:.4rem;margin:-.25rem 0 .55rem;font-size:.78rem;color:var(--muted)}
+.pop .pcrs select{flex:1;min-width:0;font-size:.78rem;padding:.15rem .25rem}
+.readout{display:flex;align-items:stretch;padding:0!important;overflow:hidden;cursor:default}
+.readout .ro-copy{border:0;background:none;color:inherit;text-align:left;padding:.38rem .6rem .4rem .65rem;cursor:copy;min-width:0}
+.readout .ro-fmt{border:0;border-left:1px solid rgba(185,203,211,.25);background:rgba(255,255,255,.06);color:var(--foam);font:600 .72rem var(--sans);padding:0 .55rem;white-space:nowrap;cursor:pointer}
+.readout .ro-fmt:hover,.readout .ro-fmt[aria-expanded=true]{background:rgba(127,214,200,.18)}
+.romenu{position:absolute;z-index:1003;left:12px;bottom:calc(var(--fb) + 74px);width:min(300px,calc(100% - 24px));background:#fff;border-radius:10px;box-shadow:0 6px 24px rgba(15,36,48,.32);padding:.6rem .7rem .7rem}
+.romenu[hidden]{display:none}
+.rom-h{margin:.1rem 0 .35rem;font-size:.76rem;font-weight:600;color:var(--muted)}
+.rom-list{display:flex;flex-direction:column;margin-bottom:.5rem}
+.rom-list button{display:flex;justify-content:space-between;gap:.6rem;align-items:baseline;border:0;background:none;text-align:left;padding:.4rem .45rem;border-radius:6px;font-size:.88rem;color:var(--ink)}
+.rom-list button:hover{background:var(--hover)}
+.rom-list button[aria-pressed=true]{background:var(--sel);font-weight:600}
+.rom-list small{font:.72rem var(--mono);color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
+.rom-prec{margin:0}
+.pop dt select.crsdt{font-size:.78rem;padding:.1rem .15rem;max-width:7.5rem;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--muted)}
+.cp-lblrow{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;margin:.75rem 0 .3rem}
+.cp-lblrow .cp-lbl{margin:0}
+.cp-show{display:flex;align-items:center;gap:.35rem;font-size:.78rem;color:var(--muted)}
+.cp-show select{font-size:.78rem;padding:.15rem .25rem;max-width:11rem}
+
 .tag.PH{background:#8b4513;border-radius:2px;transform:translateY(1px) rotate(45deg)}
 i.sw.PH{background:#8b4513;border-radius:2px}
 .note.uasrule.photorule{border-left-color:#8b4513}
@@ -1008,7 +1029,7 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
 .pop .psrc select{flex:1;min-width:0;font-size:.78rem;padding:.2rem .3rem}
 .pop .psrc .btn{font-size:.76rem;padding:.25rem .5rem}
 .themesel{display:flex;align-items:center;gap:.6rem;margin:.7rem 0 0;font-size:.86rem;font-weight:600;color:var(--muted)}
-.themesel select{flex:1}
+.themesel select{flex:1;min-width:0;max-width:100%}
 .pop .prow{display:flex;gap:.35rem;align-items:center;margin:0 0 .5rem;width:calc(100% - 14px)}
 .pop .prow .pname{margin:0;flex:1;min-width:0;width:auto}
 .pop .dice{flex:none;width:36px;height:36px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--teal);display:grid;place-items:center}
@@ -1122,7 +1143,7 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
 .app.focus .panel{display:none}
 .app.focus .toolbar:not(.open) .tool:not([aria-pressed=true]),.app.focus .toolbar:not(.open) hr{display:none}
 .app.focus .toolbar:not(.open)::after{content:"⋯";display:flex;align-items:center;justify-content:center;color:var(--mist);font-size:1.1rem;padding:0 .2rem;pointer-events:none}
-.app.focus .readout{padding:.25rem .5rem}
+.app.focus .readout .ro-copy{padding:.25rem .5rem}
 .app.focus .readout span{display:none}
 .app.focus .zoomgrp{display:none}
 
@@ -1295,10 +1316,18 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
         </a>
         <div class="settings">
           <h2 class="sub">Coordinates</h2>
+          <label class="themesel" style="margin:0 0 .6rem"><span>System</span><select id="setCrs" aria-label="Coordinate system">
+            <option value="mgrs">MGRS (35V LG 85442 70631)</option>
+            <option value="utm">UTM (35V 385442 6670631)</option>
+            <option value="tm35">ETRS-TM35FIN (N 6672345 E 385678)</option>
+            <option value="dd">Decimal degrees (60.16951, 24.93838)</option>
+            <option value="ddm">Degrees and decimal minutes (60°10.1703'N)</option>
+            <option value="dms">Degrees, minutes, seconds (60°10'10.2"N)</option></select></label>
           <div class="two">
             <label><span>Precision</span><select id="setPrec"><option value="5">1 m (10 digits)</option><option value="4">10 m (8 digits)</option><option value="3">100 m (6 digits)</option></select></label>
-            <label><span>Format</span><select id="setFmt"><option value="1">35V LG 85442 70631</option><option value="0">35VLG8544270631</option></select></label>
+            <label><span>MGRS format</span><select id="setFmt"><option value="1">35V LG 85442 70631</option><option value="0">35VLG8544270631</option></select></label>
           </div>
+          <p class="small">Every position on the map, in details, in area corner lists and when copying is shown in this system. You can type or paste coordinates in any of them.</p>
         </div>
         <div class="settings">
           <h2 class="sub">Directions</h2>
@@ -1406,7 +1435,7 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
       <div class="searchbox" id="searchBox" hidden role="dialog" aria-label="Search">
         <div class="sr-in">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
-          <input id="srQ" type="search" placeholder="Place, address, MGRS, area or drawing" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="srList" aria-autocomplete="list" aria-label="Search">
+          <input id="srQ" type="search" placeholder="Place, address, coordinates, area or drawing" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="srList" aria-autocomplete="list" aria-label="Search">
           <button class="ibtn" id="srClose" type="button" aria-label="Close search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
         </div>
         <ul id="srList" role="listbox" aria-label="Results"></ul>
@@ -1451,7 +1480,7 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
           <div class="cp-types" id="cpTypes" role="group" aria-label="What to add"></div>
           <p class="small" id="cpHint"></p>
           <div class="cp-sym" id="cpSym" hidden><span class="sw"></span><span class="st"></span><button class="btn ghost sm" id="cpSymBtn" type="button">Change symbol</button></div>
-          <label class="cp-lbl" for="cpText">Coordinates</label>
+          <div class="cp-lblrow"><label class="cp-lbl" for="cpText">Coordinates</label><label class="cp-show">Shown as <select id="cpCrs" aria-label="Show coordinates as"></select></label></div>
           <textarea id="cpText" rows="6" spellcheck="false" autocomplete="off" autocapitalize="characters" placeholder="35V LG 85442 70631&#10;OP North 35VLG8600071000&#10;60.1699, 24.9384&#10;595620N 0251653E&#10;60°10'12&quot;N 24°56'18&quot;E"></textarea>
           <div class="cp-row">
             <button class="btn ghost sm" id="cpFileBtn" type="button">Load from file</button>
@@ -1470,7 +1499,16 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
         </div>
         <div class="cp-foot"><button class="btn" id="cpAdd" type="button">Add to map</button><button class="btn ghost" id="cpZoom" type="button">Zoom to preview</button><button class="btn ghost" id="cpCancel" type="button">Cancel</button></div>
       </div>
-      <button class="readout" id="readout" type="button" title="Copy this coordinate"><b>&nbsp;</b><span>&nbsp;</span></button>
+      <div class="readout" id="readout">
+        <button class="ro-copy" id="roCopy" type="button" title="Copy this coordinate"><b>&nbsp;</b><span>&nbsp;</span></button>
+        <button class="ro-fmt" id="roFmt" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="roMenu" title="Change the coordinate format"></button>
+      </div>
+      <div class="romenu" id="roMenu" hidden role="dialog" aria-label="Coordinate format">
+        <p class="rom-h">Coordinate format</p>
+        <div class="rom-list" id="roList"></div>
+        <p class="rom-h">Precision</p>
+        <div class="seg rom-prec" id="roPrec"><button type="button" data-p="5">1 m</button><button type="button" data-p="4">10 m</button><button type="button" data-p="3">100 m</button></div>
+      </div>
       <div id="toast" role="status"><span id="toastMsg"></span><button type="button" id="toastAct" hidden></button></div>
     </div>
   </div>
@@ -3825,8 +3863,8 @@ const PHOTO = [{"id":"IKR1","nro":"1","name":"Taipalsaaren ampuma-alue","org":"M
 
 const WORDS = {"labels": {"metals": "Metals and stones", "plants": "Trees and plants", "berries": "Berries and mushrooms", "mammals": "Mammals", "birds": "Birds", "fish": "Fish and water life", "sky": "Weather and sky", "terrain": "Terrain and water", "tools": "Tools and things", "food": "Food"}, "fi": {"metals": ["KUPARI", "TERÄS", "SINKKI", "RAUTA", "HOPEA", "PRONSSI", "MESSINKI", "TINA", "LYIJY", "NIKKELI", "KROMI", "KOBOLTTI", "TITAANI", "MALMI", "GRANIITTI", "KVARTSI", "MARMORI", "LIUSKE", "SAVI", "HIEKKA", "SORA", "KALKKI", "GNEISSI", "MAGNEETTI", "MERIPIHKA", "HELMI", "SAFIIRI", "RUBIINI", "SMARAGDI", "TIMANTTI", "VOLFRAMI", "MAGNESIUM", "ALUMIINI", "PLATINA", "OBSIDIAANI", "JASPIS", "AKAATTI", "AMETISTI"], "plants": ["MÄNTY", "KOIVU", "HAAPA", "PIHLAJA", "LEPPÄ", "VAAHTERA", "TAMMI", "SAARNI", "LEHMUS", "JALAVA", "PAJU", "KATAJA", "KANERVA", "SAMMAL", "JÄKÄLÄ", "KAISLA", "RUOKO", "ORVOKKI", "KIELO", "VUOKKO", "LEINIKKI", "APILA", "OHDAKE", "NOKKONEN", "SANANJALKA", "KORTE", "VILLAKKO", "TUOMI", "SYREENI", "KAMOMILLA", "RUUSU", "NEILIKKA", "LUPIINI"], "berries": ["MUSTIKKA", "PUOLUKKA", "HILLA", "LAKKA", "KARPALO", "VADELMA", "MANSIKKA", "JUOLUKKA", "TYRNI", "ARONIA", "KARVIAINEN", "HERUKKA", "TATTI", "ROUSKU", "KANTARELLI", "HAPERO", "VAAPUKKA", "KORVASIENI", "MESIMARJA", "LILLUKKA"], "mammals": ["KARHU", "ILVES", "KETTU", "JÄNIS", "HIRVI", "PEURA", "PORO", "MAJAVA", "SAUKKO", "NÄÄTÄ", "KÄRPPÄ", "ORAVA", "SIILI", "MYYRÄ", "HILLERI", "AHMA", "MÄYRÄ", "LEPAKKO", "HYLJE", "NORPPA", "LUMIKKO", "PIISAMI", "SOPULI", "KAURIS", "VILLISIKA", "SUPIKOIRA", "MINKKI"], "birds": ["KOTKA", "HAUKKA", "HUUHKAJA", "PÖLLÖ", "KORPPI", "VARIS", "HARAKKA", "NÄRHI", "TIKKA", "KÄKI", "PEIPPO", "TIAINEN", "VARPUNEN", "JOUTSEN", "KURKI", "HAIKARA", "SORSA", "TELKKÄ", "KUIKKA", "KAAKKURI", "LOKKI", "TIIRA", "TEERI", "METSO", "PYY", "KIURU", "RASTAS", "SIRKKU", "KOTTARAINEN", "PÄÄSKY", "SIEPPO", "HIIRIHAUKKA", "KANAHAUKKA", "VARPUSHAUKKA", "KUOVI", "KIVITASKU"], "fish": ["HAUKI", "AHVEN", "LOHI", "TAIMEN", "SIIKA", "MUIKKU", "KUHA", "MADE", "SÄRKI", "LAHNA", "SILAKKA", "KIISKI", "HARJUS", "SALAKKA", "KAMPELA", "TURSKA", "SILLI", "SIMPUKKA", "RAPU", "ANKERIAS", "SAMMI", "NIERIÄ", "SÄYNE", "KOLMIPIIKKI"], "sky": ["TUULI", "MYRSKY", "SADE", "LUMI", "HALLA", "KUURA", "SUMU", "PILVI", "REVONTULI", "UKKONEN", "SALAMA", "TÄHTI", "AURINKO", "SATEENKAARI", "HANKI", "NIETOS", "TUISKU", "PAKKANEN", "HELLE", "RÄNTÄ", "TIHKU", "VIIMA", "PUHURI", "PUUSKA", "KOMEETTA", "METEORI", "PLANEETTA", "OTAVA", "KAAMOS", "ILTARUSKO"], "terrain": ["AALTO", "KOSKI", "PURO", "LAMPI", "SUO", "KANGAS", "HARJU", "KUMPU", "LAAKSO", "NIEMI", "SAARI", "LAHTI", "SALMI", "KARI", "LUOTO", "RINNE", "KALLIO", "LÄHDE", "JÄÄTIKKÖ", "TUNTURI", "RANTA", "KORPI", "RÄME", "NEVA", "JOKI", "VIRTA", "SUVANTO", "ROTKO", "DYYNI", "LAGUUNI", "KANJONI", "SELKÄ"], "tools": ["VASARA", "KIRVES", "SAHA", "PUUKKO", "LAPIO", "HARAVA", "VIIKATE", "AIRO", "ANKKURI", "KOMPASSI", "LYHTY", "KATTILA", "KAUHA", "KUKSA", "SUKSI", "SAUVA", "REKI", "TERVA", "KÖYSI", "SOLMU", "NAULA", "RUUVI", "MUTTERI", "SAKSET", "NEULA", "LANKA", "KELLO", "RUMPU", "KANTELE", "TORVI", "PILLI", "HUILU", "KIRNU", "VAAKA", "ALASIN", "TALTTA", "TIKAPUU", "ÄMPÄRI", "KYNTTILÄ"], "food": ["LEIPÄ", "PULLA", "PIIRAKKA", "KAKKU", "KEKSI", "PUURO", "KIISSELI", "MEHU", "KAHVI", "SUOLA", "PIPPURI", "SINAPPI", "HUNAJA", "JUUSTO", "MAKKARA", "NAKKI", "PERUNA", "PORKKANA", "NAURIS", "LANTTU", "KAALI", "SIPULI", "OMENA", "PÄÄRYNÄ", "LUUMU", "KIRSIKKA", "RUSINA", "MANTELI", "PÄHKINÄ", "KANELI", "INKIVÄÄRI"]}, "en": {"metals": ["COPPER", "IRON", "STEEL", "ZINC", "NICKEL", "COBALT", "CHROME", "BRONZE", "BRASS", "PLATINUM", "TITANIUM", "GRANITE", "QUARTZ", "MARBLE", "FLINT", "SLATE", "BASALT", "AMBER", "JADE", "OPAL", "GARNET", "TOPAZ", "ONYX", "PEWTER", "SAPPHIRE", "RUBY", "EMERALD", "TUNGSTEN", "MAGNESIUM", "OBSIDIAN", "JASPER", "AGATE", "AMETHYST", "GRAPHITE"], "plants": ["SPRUCE", "PINE", "BIRCH", "ASPEN", "ROWAN", "ALDER", "MAPLE", "OAK", "ELM", "WILLOW", "JUNIPER", "HAZEL", "CEDAR", "LARCH", "POPLAR", "BEECH", "HOLLY", "HEATHER", "FERN", "MOSS", "LICHEN", "REED", "CLOVER", "THISTLE", "IVY", "NETTLE", "TULIP", "DAISY", "LILY", "ORCHID", "LILAC", "LAVENDER", "ROSE", "CYPRESS"], "berries": ["BLUEBERRY", "LINGONBERRY", "CLOUDBERRY", "CRANBERRY", "RASPBERRY", "STRAWBERRY", "GOOSEBERRY", "CURRANT", "MUSHROOM", "CHANTERELLE", "BLACKBERRY", "ELDERBERRY", "MOREL", "TRUFFLE", "BOLETUS", "MULBERRY"], "mammals": ["BEAR", "LYNX", "WOLF", "FOX", "HARE", "MOOSE", "DEER", "BEAVER", "OTTER", "MARTEN", "ERMINE", "SQUIRREL", "BADGER", "HEDGEHOG", "WOLVERINE", "SEAL", "WALRUS", "BISON", "LEMMING", "WEASEL", "MUSKRAT", "REINDEER", "BOAR", "MINK", "RACCOON", "ELK"], "birds": ["EAGLE", "HAWK", "FALCON", "OWL", "RAVEN", "CROW", "MAGPIE", "JAY", "WOODPECKER", "CUCKOO", "FINCH", "SPARROW", "SWAN", "CRANE", "HERON", "LOON", "GULL", "TERN", "GROUSE", "PLOVER", "SWIFT", "LARK", "ROBIN", "WREN", "THRUSH", "STARLING", "PELICAN", "PUFFIN", "OSPREY", "KESTREL", "CONDOR", "CURLEW", "BUNTING"], "fish": ["PIKE", "PERCH", "SALMON", "TROUT", "WHITEFISH", "ZANDER", "BURBOT", "BREAM", "HERRING", "HADDOCK", "MACKEREL", "STURGEON", "CARP", "FLOUNDER", "MUSSEL", "CRAYFISH", "EEL", "CHAR", "GRAYLING", "OYSTER", "LOBSTER"], "sky": ["WIND", "STORM", "RAIN", "SNOW", "FROST", "MIST", "CLOUD", "THUNDER", "AURORA", "COMET", "METEOR", "BLIZZARD", "DRIZZLE", "SLEET", "GALE", "BREEZE", "TWILIGHT", "ECLIPSE", "NEBULA", "PLANET", "ZENITH", "RAINBOW", "MONSOON", "CYCLONE"], "terrain": ["RIVER", "BROOK", "POND", "MARSH", "RIDGE", "VALLEY", "ISLAND", "REEF", "DUNE", "CANYON", "MESA", "GLACIER", "FJORD", "HARBOR", "MEADOW", "ORCHARD", "QUARRY", "LAGOON", "TUNDRA", "SUMMIT", "BOULDER", "CREEK", "PRAIRIE", "PLATEAU", "CRATER", "GORGE", "RAPIDS", "CASCADE"], "tools": ["HAMMER", "AXE", "SAW", "SHOVEL", "RAKE", "ANCHOR", "COMPASS", "LANTERN", "KETTLE", "LADLE", "ROPE", "KNOT", "NAIL", "SCREW", "ANVIL", "CHISEL", "LADDER", "BUCKET", "CANDLE", "DRUM", "FLUTE", "HARP", "VIOLIN", "BARREL", "SLED", "PADDLE", "TORCH", "WHISTLE"], "food": ["BREAD", "BUN", "PIE", "CAKE", "BISCUIT", "PORRIDGE", "HONEY", "MUSTARD", "PEPPER", "CHEESE", "SAUSAGE", "POTATO", "CARROT", "TURNIP", "CABBAGE", "ONION", "APPLE", "PEAR", "PLUM", "CHERRY", "LEMON", "MANGO", "PEACH", "RAISIN", "ALMOND", "WALNUT", "CINNAMON", "GINGER", "PRETZEL"]}};
 
-/* MGRS map tool, version 2.14.0 (30 Oct 2026). Version history: guide.html#versions */
-const APP_VERSION = "2.14.0", APP_DATE = "2026-10-30";
+/* MGRS map tool, version 2.16.0 (19 Nov 2026). Version history: guide.html#versions */
+const APP_VERSION = "2.16.0", APP_DATE = "2026-11-19";
 "use strict";
 /* ================= helpers ================= */
 const $ = id => document.getElementById(id);
@@ -4061,7 +4099,52 @@ const KEY = "oscarnissin.mgrsmap.v1";
 const PALETTE = ["#0b6a6f","#1d5fbf","#7a3fb8","#b8326e","#2f7d32","#8a5a1f","#24323a","#0a8f9a"];
 const S = { digits:5, spaced:true, base:"osm", showR:true, showD:true, labels:false, active:null, layers:[], sym:null,
   ang:"deg", north:"true", place:null, drag:true, areaLock:false, recent:[], inU:null };
-const mgrs = ll => (ll.lat > 84 || ll.lat < -80) ? ll.lat.toFixed(5) + ", " + ll.lng.toFixed(5) : toMGRS(ll.lat, ll.lng, S.digits, S.spaced);
+// Coordinate systems for showing and copying positions. Precision (1 m, 10 m, 100 m) applies to all of them.
+const CRS = {
+  mgrs: { label:"MGRS", short:"MGRS", tag:"MGRS" },
+  utm:  { label:"UTM", short:"UTM", tag:"UTM" },
+  tm35: { label:"ETRS-TM35FIN", short:"TM35FIN", tag:"TM35FIN" },
+  dd:   { label:"Decimal degrees", short:"Lat, lon", tag:"DD" },
+  ddm:  { label:"Degrees and decimal minutes", short:"Lat, lon", tag:"DDM" },
+  dms:  { label:"Degrees, minutes, seconds", short:"Lat, lon", tag:"DMS" }
+};
+const crsOf = () => CRS[S.crs] ? S.crs : "mgrs";
+const truncTo = (v, unit) => Math.floor(v / unit) * unit;
+function degMin(v, pos, neg, decimals){
+  const a = Math.abs(v); let d = Math.floor(a), m = +((a - d) * 60).toFixed(decimals);
+  if (m >= 60){ d++; m = 0; }
+  return d + "°" + m.toFixed(decimals).padStart(decimals ? decimals + 3 : 2, "0") + "'" + (v >= 0 ? pos : neg);
+}
+function degMinSec(v, pos, neg, decimals){
+  const a = Math.abs(v), f = Math.pow(10, decimals);
+  let t = Math.round(a * 3600 * f) / f, d = Math.floor(t / 3600); t -= d * 3600;
+  let m = Math.floor(t / 60), s = +(t - m * 60).toFixed(decimals);
+  if (s >= 60){ s = 0; m++; } if (m >= 60){ m = 0; d++; }
+  return d + "°" + String(m).padStart(2, "0") + "'" + s.toFixed(decimals).padStart(decimals ? decimals + 3 : 2, "0") + '"' + (v >= 0 ? pos : neg);
+}
+// Format a position in a coordinate system; digits 5 = 1 m, 4 = 10 m, 3 = 100 m
+function fmtCoordIn(ll, crs, digits){
+  digits = digits || S.digits;
+  const lat = ll.lat, lon = ll.lng, polar = lat > 84 || lat < -80, unit = Math.pow(10, 5 - digits);
+  switch (crs){
+    case "utm": {
+      if (polar) return fmtCoordIn(ll, "dd", digits);
+      const u = toUTM(lat, lon), band = BANDS[Math.min(19, Math.floor((lat + 80)/8))];
+      return u.zone + band + " " + String(truncTo(u.x, unit)).padStart(6, "0") + " " + String(truncTo(u.y, unit)).padStart(7, "0");
+    }
+    case "tm35": { const u = toUTM(lat, lon, 35); return "N " + truncTo(u.y, unit) + " E " + truncTo(u.x, unit); }
+    case "dd": return lat.toFixed(digits) + ", " + lon.toFixed(digits);
+    case "ddm": return degMin(lat, "N", "S", digits - 1) + " " + degMin(lon, "E", "W", digits - 1);
+    case "dms": return degMinSec(lat, "N", "S", digits === 5 ? 1 : 0) + " " + degMinSec(lon, "E", "W", digits === 5 ? 1 : 0);
+    default: return polar ? lat.toFixed(5) + ", " + lon.toFixed(5) : toMGRS(lat, lon, digits, S.spaced);
+  }
+}
+// "mgrs()" shows a position in the chosen system (the name stayed from when MGRS was the only one)
+const mgrs = ll => fmtCoordIn(ll, crsOf());
+const trueMGRS = ll => fmtCoordIn(ll, "mgrs");
+// A second way of writing the same spot: MGRS if another system is chosen, otherwise lat, lon
+const altLabel = () => crsOf() === "mgrs" ? "Lat, lon" : "MGRS";
+const altCoord = ll => crsOf() === "mgrs" ? ll.lat.toFixed(5) + ", " + ll.lng.toFixed(5) : trueMGRS(ll);
 function newLayer(name){
   return { id: uid(), name, color: PALETTE[S.layers.length % PALETTE.length], visible: true, features: [] };
 }
@@ -4263,9 +4346,10 @@ function renderAreaDetail(){
     (a.uas || a.photo ? '<p class="note uasrule' + (a.photo ? ' photorule' : '') + '" id="dRule"></p>' : '') +
     '<p class="activenote">' + ACTIVE_NOTE + '</p>' +
     '<div class="opts"><button class="btn" id="copyAll" type="button">Copy all ' + m.length + ' points</button><button class="btn ghost" id="areaZoom" type="button">Zoom to area</button>' +
+    '<label>System <select id="crsSel">' + Object.keys(CRS).map(k => '<option value="' + k + '">' + esc(CRS[k].label) + '</option>').join("") + '</select></label>' +
     '<label>Precision <select id="prec"><option value="5">1 m</option><option value="4">10 m</option><option value="3">100 m</option></select></label>' +
     '<label>Format <select id="fmt"><option value="1">Spaced</option><option value="0">Compact</option></select></label></div>' +
-    '<div class="tablewrap"><table><thead><tr><th>#</th><th>MGRS (tap to copy)</th></tr></thead><tbody></tbody></table></div>' +
+    '<div class="tablewrap"><table><thead><tr><th>#</th><th>' + esc(CRS[crsOf()].label) + ' (tap to copy)</th></tr></thead><tbody></tbody></table></div>' +
     (a.photo ? '<p class="small">Source: Finnish Defence Forces, public aerial photography restriction areas (JULK), up to date ' + esc(PHOTO_DATE) + '. MGRS values are truncated, not rounded.</p></div>' :
      a.uas ? '<p class="small">Source: Traficom UAS zones, data version ' + esc(UAS_VERSION) + '. See <a href="https://www.droneinfo.fi/fi/uas-ilmatilavyohykkeet" target="_blank" rel="noopener">droneinfo.fi</a> for the official zone information. MGRS values are truncated, not rounded.</p></div>'
             : '<p class="small">The source gives whole seconds (about 30 m), so digits beyond 100 m only reflect that rounding. MGRS values are truncated, not rounded.</p></div>');
@@ -4287,6 +4371,8 @@ function renderAreaDetail(){
     tb.appendChild(tr);
   });
   $("prec").value = String(S.digits); $("fmt").value = S.spaced ? "1" : "0";
+  $("crsSel").value = crsOf(); $("crsSel").onchange = e => setCrs(e.target.value);
+  $("fmt").closest("label").hidden = crsOf() !== "mgrs";
   $("prec").onchange = e => setCoordFmt(+e.target.value, S.spaced);
   $("fmt").onchange = e => setCoordFmt(S.digits, e.target.value === "1");
   $("copyAll").onclick = () => copy(m.join("\n"), "Copied " + m.length + " points");
@@ -4315,8 +4401,44 @@ function hlMarker(i, on){
   mk.setStyle(on ? { radius:9, fillColor:mk.options.color } : { radius:r, fillColor:"#fff" });
   if (on){ mk.bringToFront(); mk.openTooltip(); } else mk.closeTooltip();
 }
+// One place that changes the coordinate format; every selector (Settings, readout menu, details, coordinate panel, area details) calls it
+function crsOptions(){ return Object.keys(CRS).map(k => '<option value="' + k + '">' + esc(CRS[k].tag === CRS[k].label ? CRS[k].label : CRS[k].tag + " – " + CRS[k].label) + '</option>').join(""); }
+function syncCrsControls(){
+  const c = crsOf();
+  $("setCrs").value = c; $("setFmt").closest("label").hidden = c !== "mgrs";
+  if ($("cpCrs")){ if (!$("cpCrs").options.length) $("cpCrs").innerHTML = crsOptions(); $("cpCrs").value = c; }
+  $("roFmt").textContent = CRS[c].tag + " ▾";
+  renderRoMenu();
+}
+function setCrs(c, quiet){
+  // keep a drawing's details open across the switch
+  let openFid = null;
+  Object.keys(objs).forEach(id => { const o = objs[id]; if (o && o.isPopupOpen && o.isPopupOpen()) openFid = id; });
+  S.crs = CRS[c] ? c : "mgrs"; save();
+  syncCrsControls();
+  if (AS.sel) renderAreaDetail();
+  updateReadout(); map.closePopup(); renderLayersPanel(); updateDrawbar();
+  if (typeof CP !== "undefined" && CP.open) cpUpdate();
+  if (openFid && objs[openFid]) setTimeout(() => objs[openFid] && objs[openFid].openPopup(), 0);
+  if (!quiet) toast("Coordinates now in " + CRS[crsOf()].label + ": " + mgrs(map.getCenter()));
+}
+function renderRoMenu(){
+  const box = $("roList"); if (!box || $("roMenu").hidden || !map._loaded) return; // only while the menu is open
+  const ll = readLL || map.getCenter();
+  box.innerHTML = "";
+  Object.keys(CRS).forEach(k => {
+    const b = document.createElement("button"); b.type = "button";
+    b.setAttribute("aria-pressed", k === crsOf() ? "true" : "false");
+    b.innerHTML = "<span></span><small></small>";
+    b.firstChild.textContent = CRS[k].label; b.lastChild.textContent = fmtCoordIn(ll, k);
+    b.onclick = () => { setCrs(k, true); };
+    box.appendChild(b);
+  });
+  document.querySelectorAll("#roPrec button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.p === S.digits ? "true" : "false"));
+}
 function setCoordFmt(d, sp){
   S.digits = d; S.spaced = sp; save();
+  if ($("roPrec")) renderRoMenu();
   $("setPrec").value = String(d); $("setFmt").value = sp ? "1" : "0";
   if (AS.sel) renderAreaDetail();
   updateReadout(); map.closePopup(); renderLayersPanel(); updateDrawbar();
@@ -4902,10 +5024,10 @@ function popupFor(fid){
     dl.append(dt, dd);
   };
   const dirLabel = "Direction" + (S.north === "grid" ? " (grid)" : "");
-  let copyAll = null, copyLabel = "Copy MGRS";
+  let copyAll = null, copyLabel = "Copy coordinates";
   if (isPointLike(f)){
-    add("MGRS", mgrs(pts[0]), true);
-    add("Lat, lon", pts[0].lat.toFixed(5) + ", " + pts[0].lng.toFixed(5), true);
+    add(CRS[crsOf()].short, mgrs(pts[0]), true);
+    add(altLabel(), altCoord(pts[0]), true);
     if (f.kind === "symbol") add("SIDC", sidcOf(f.sym), true);
     copyAll = mgrs(pts[0]);
   } else if (f.kind === "line"){
@@ -4936,6 +5058,13 @@ function popupFor(fid){
     copyAll = f.kind === "measure" ? featCoordsText(f) : mgrs(pts[0]) + "\n" + mgrs(pts[1]); copyLabel = "Copy start and end";
   }
   box.appendChild(dl);
+  {
+    const row = document.createElement("label"); row.className = "pcrs";
+    row.innerHTML = 'Coordinates in <select aria-label="Coordinate format">' + crsOptions() + '</select>';
+    const sel = row.querySelector("select"); sel.value = crsOf();
+    sel.onchange = () => setCrs(sel.value, true);
+    box.appendChild(row);
+  }
   if (f.kind === "measure" || f.kind === "vector") box.appendChild(angleDetails(bearing(pts[0], pts[1]), pts[0]));
   if (f.kind === "vector"){
     // distance and direction can be changed here
@@ -5468,7 +5597,7 @@ function featGeoJSON(f, l, compact){
   let geometry;
   if (f.kind === "point" || f.kind === "symbol"){
     geometry = { type:"Point", coordinates:g(pts[0]) };
-    if (!compact) props.mgrs = mgrs(pts[0]);
+    if (!compact) props.mgrs = trueMGRS(pts[0]);
     if (f.kind === "symbol"){ props.sidc = sidcOf(f.sym); if (f.sym.T) props.designation = f.sym.T; if (f.sym.M) props.higherFormation = f.sym.M; props.size = f.sym.size; }
   } else if (f.kind === "line" || f.kind === "measure" || f.kind === "vector"){
     geometry = { type:"LineString", coordinates: pts.map(g) };
@@ -5519,7 +5648,7 @@ function exportKML(layers){
       const vnk = vertexNames(f); if (vnk.some(Boolean)) desc += ". Points: " + vnk.map((n, i) => n || String(i + 1)).join(", ");
       if (f.kind === "point" || f.kind === "symbol"){
         gm = "<Point><coordinates>" + c(pts[0]) + "</coordinates></Point>";
-        desc += ", MGRS " + mgrs(pts[0]); if (f.kind === "symbol") desc += ", SIDC " + sidcOf(f.sym);
+        desc += ", " + CRS[crsOf()].short + " " + mgrs(pts[0]); if (f.kind === "symbol") desc += ", SIDC " + sidcOf(f.sym);
       } else if (f.kind === "line" || f.kind === "measure" || f.kind === "vector"){
         gm = "<LineString><tessellate>1</tessellate><coordinates>" + pts.map(c).join(" ") + "</coordinates></LineString>";
         desc += ", " + fmtDist(pathLen(pts)) + (pts.length === 2 && f.kind !== "line" ? ", direction " + fmtAng(bearing(pts[0], pts[1]), pts[0]) : "");
@@ -5998,9 +6127,21 @@ function updateReadout(ll){
   ll = readLL;
   const r = $("readout");
   r.querySelector("b").textContent = mgrs(ll);
-  r.querySelector("span").textContent = ll.lat.toFixed(5) + ", " + ll.lng.toFixed(5) + (useCenter() ? "  at the crosshair" : "");
+  if (!$("roMenu").hidden) renderRoMenu();
+  r.querySelector("span").textContent = altCoord(ll) + (useCenter() ? "  at the crosshair" : "");
 }
-$("readout").onclick = () => { if (readLL) copy(mgrs(readLL), "Copied " + mgrs(readLL)); };
+$("roCopy").onclick = () => { if (readLL) copy(mgrs(readLL), "Copied " + mgrs(readLL)); };
+$("roFmt").onclick = e => {
+  e.stopPropagation();
+  const m = $("roMenu"), open = m.hidden;
+  m.hidden = !open; $("roFmt").setAttribute("aria-expanded", open ? "true" : "false");
+  if (open) renderRoMenu();
+};
+document.querySelectorAll("#roPrec button").forEach(b => b.onclick = () => { setCoordFmt(+b.dataset.p, S.spaced); renderRoMenu(); });
+document.addEventListener("pointerdown", e => {
+  const m = $("roMenu");
+  if (!m.hidden && !m.contains(e.target) && !$("roFmt").contains(e.target)){ m.hidden = true; $("roFmt").setAttribute("aria-expanded", "false"); }
+});
 $("mapMenuBtn").innerHTML = svgI("layers");
 $("locBtn").innerHTML = svgI("locate");
 $("homeBtn").innerHTML = svgI("home");
@@ -6116,6 +6257,7 @@ document.addEventListener("fullscreenchange", () => { if (!document.fullscreenEl
 /* ================= settings ================= */
 function syncSettings(){
   $("setPrec").value = String(S.digits); $("setFmt").value = S.spaced ? "1" : "0";
+  $("setCrs").value = crsOf(); $("setFmt").closest("label").hidden = crsOf() !== "mgrs";
   $("setAng").value = S.ang; $("setNorth").value = S.north;
   document.querySelectorAll('input[name=place]').forEach(r => r.checked = r.value === S.place);
   document.querySelectorAll('input[name=dragmode]').forEach(r => r.checked = r.value === S.dragMode);
@@ -6126,6 +6268,7 @@ function syncSettings(){
   $("showLabels").checked = $("mmLabels").checked = !!S.labels;
 }
 $("setPrec").onchange = e => setCoordFmt(+e.target.value, S.spaced);
+$("setCrs").onchange = e => setCrs(e.target.value);
 $("setFmt").onchange = e => setCoordFmt(S.digits, e.target.value === "1");
 $("setAng").onchange = e => { S.ang = e.target.value; save(); renderAllLayers(); updateDrawbar(); drawMeasure(); map.closePopup(); };
 $("setNorth").onchange = e => { S.north = e.target.value; save(); renderAllLayers(); updateDrawbar(); drawMeasure(); map.closePopup(); };
@@ -6338,6 +6481,45 @@ function parseLine(line, lonFirst){
     if (!g) return { error: "“" + line.slice(start, end).trim() + "” is not a valid MGRS grid" };
     found.push(L.latLng(g.lat, g.lon)); spans.push([start, end]);
   }
+  // 1b. UTM: zone (and band letter), easting, northing. Without a band letter only zones 31-37 are accepted.
+  if (!found.length){
+    const re = /(^|[^0-9A-Z])(\d{1,2})\s?([C-HJ-NP-X])?\s+(\d{5,7})(?:[.,]\d+)?\s*m?\s*E?\s*[,;\s]\s*(\d{6,8})(?:[.,]\d+)?\s*m?\s*N?(?![0-9A-Z])/gi;
+    let u;
+    while ((u = re.exec(line))){
+      const zone = +u[2], band = u[3] ? u[3].toUpperCase() : "";
+      if (zone < 1 || zone > 60 || (!band && (zone < 31 || zone > 37))) continue;
+      const south = band && band < "N";
+      const g = fromUTM(zone, +u[4] + 0.5, +u[5] + 0.5, south); // whole metres: centre of that metre
+      if (!isFinite(g.lat) || Math.abs(g.lat) > 84) continue;
+      found.push(L.latLng(g.lat, g.lon)); spans.push([u.index + u[1].length, u.index + u[0].length]);
+    }
+  }
+  // 1c. ETRS-TM35FIN: "N 6672345 E 385678" (also P/I or N=/E=), or a bare northing and easting pair inside Finland
+  if (!found.length){
+    const inN = n => n >= 6500000 && n <= 7900000, inE = e => e >= 20000 && e <= 800000;
+    const labelled = [/\b[NP]\s*[=:]?\s*(\d{7})(?:[.,]\d+)?\s*[,;\s]*\s*[EI]\s*[=:]?\s*(\d{5,6})(?:[.,]\d+)?/gi,
+                      /\b[EI]\s*[=:]?\s*(\d{5,6})(?:[.,]\d+)?\s*[,;\s]*\s*[NP]\s*[=:]?\s*(\d{7})(?:[.,]\d+)?/gi];
+    labelled.forEach((re, k) => {
+      let t;
+      while ((t = re.exec(line))){
+        const n = +(k ? t[2] : t[1]), e = +(k ? t[1] : t[2]);
+        if (!inN(n) || !inE(e)) continue;
+        const g = fromUTM(35, e + 0.5, n + 0.5, false);
+        found.push(L.latLng(g.lat, g.lon)); spans.push([t.index, t.index + t[0].length]);
+      }
+    });
+    if (!found.length){
+      const re = /(^|[^\d.,])(\d{6,7})(?:[.,]\d+)?\s*[,;\s]\s*(\d{6,7})(?:[.,]\d+)?(?![\d])/g;
+      let t;
+      while ((t = re.exec(line))){
+        let n = +t[2], e = +t[3];
+        if (inE(n) && inN(e)){ const x = n; n = e; e = x; }
+        if (!inN(n) || !inE(e)) continue;
+        const g = fromUTM(35, e + 0.5, n + 0.5, false);
+        found.push(L.latLng(g.lat, g.lon)); spans.push([t.index + t[1].length, t.index + t[0].length]);
+      }
+    }
+  }
   // 2. compact DMS
   if (!found.length){
     CDMS_RE.lastIndex = 0;
@@ -6407,7 +6589,7 @@ function parseCoord(q){
   if (r.items.length === 1 && !r.errors.length){ const it = r.items[0]; return { lat:it.ll.lat, lon:it.ll.lng, label:t }; }
   return null;
 }
-const mgrs10 = ll => (ll.lat > 84 || ll.lat < -80) ? ll.lat.toFixed(6) + ", " + ll.lng.toFixed(6) : toMGRS(ll.lat, ll.lng, 5, true);
+const mgrs10 = ll => fmtCoordIn(ll, crsOf(), 5); // full precision in the chosen system, readable back by the parser
 
 /* ================= coordinate entry panel ================= */
 const CP = { open:false, kind:"point", edit:null, parsed:null, geo:null, layer:null };
@@ -6679,6 +6861,8 @@ $("cpLonFirst").onchange = cpUpdate;
 $("cpR").addEventListener("input", cpUpdate);
 $("cpRU").onchange = cpUpdate;
 $("cpDir").addEventListener("input", cpUpdate);
+$("cpCrs").innerHTML = crsOptions();
+$("cpCrs").onchange = e => setCrs(e.target.value, true);
 wireUnitSelect($("cpDir"), $("cpDirU"), cpUpdate);
 $("cpLayer").onchange = e => { CP.layer = e.target.value; cpUpdate(); };
 $("cpAdd").onclick = cpCommit;
@@ -6864,6 +7048,7 @@ document.addEventListener("pointerdown", e => { if (SR.open && !$("searchBox").c
 
 /* ================= start ================= */
 $("activeNoteTop").innerHTML = ACTIVE_NOTE;
+syncCrsControls();
 $("activeNoteMenu").innerHTML = ACTIVE_NOTE;
 document.querySelectorAll(".uasver").forEach(el => el.textContent = UAS_VERSION);
 document.querySelectorAll(".photodate").forEach(el => el.textContent = PHOTO_DATE);
