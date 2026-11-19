@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- MGRS map tool 2.16.0, 2026-11-19 -->
+<!-- MGRS map tool 2.17.0, 2026-11-19 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f2430">
-<meta name="version" content="2.16.0">
+<meta name="version" content="2.17.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -974,6 +974,12 @@ tr:hover td,tr.hl td{background:var(--sel)}
 .leaflet-tooltip.cpnum:before{display:none}
 
 /* v3 additions */
+.bg-row{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;padding:.5rem 0;border-bottom:1px solid var(--line)}
+.bg-t{flex:1 1 170px;min-width:0}
+.bg-t b{display:block;font-size:.88rem}
+.bg-t small{display:block;font-size:.74rem;color:var(--muted)}
+.bg-b{display:flex;gap:.3rem}
+.bg-b .btn{font-size:.76rem;padding:.25rem .5rem}
 .pop .pcrs{display:flex;align-items:center;gap:.4rem;margin:-.25rem 0 .55rem;font-size:.78rem;color:var(--muted)}
 .pop .pcrs select{flex:1;min-width:0;font-size:.78rem;padding:.15rem .25rem}
 .readout{display:flex;align-items:stretch;padding:0!important;overflow:hidden;cursor:default}
@@ -1378,6 +1384,12 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
             <div class="pbtns" style="margin-top:.5rem"><button class="btn sm" id="clAdd" type="button">Add list</button><button class="btn ghost sm" id="clFileBtn" type="button">Load from file</button><input type="file" id="clFile" accept=".txt,.csv,.tsv,text/plain,text/csv" hidden></div>
             <p class="small" id="clMsg" aria-live="polite"></p>
           </div>
+        </div>
+        <div class="settings">
+          <h2 class="sub">Background data</h2>
+          <p class="small" style="margin:0 0 .4rem">Download the airspace areas this map uses, to open in other map programs (QGIS, Google Earth, ATAK and others). KMZ is a compressed KML.</p>
+          <div id="bgList"></div>
+          <p class="small">Unofficial and not for navigation. The files do not tell which areas are active: check NOTAMs and/or Flyk.com.</p>
         </div>
         <div class="settings">
           <h2 class="sub">Map</h2>
@@ -3863,8 +3875,8 @@ const PHOTO = [{"id":"IKR1","nro":"1","name":"Taipalsaaren ampuma-alue","org":"M
 
 const WORDS = {"labels": {"metals": "Metals and stones", "plants": "Trees and plants", "berries": "Berries and mushrooms", "mammals": "Mammals", "birds": "Birds", "fish": "Fish and water life", "sky": "Weather and sky", "terrain": "Terrain and water", "tools": "Tools and things", "food": "Food"}, "fi": {"metals": ["KUPARI", "TERÄS", "SINKKI", "RAUTA", "HOPEA", "PRONSSI", "MESSINKI", "TINA", "LYIJY", "NIKKELI", "KROMI", "KOBOLTTI", "TITAANI", "MALMI", "GRANIITTI", "KVARTSI", "MARMORI", "LIUSKE", "SAVI", "HIEKKA", "SORA", "KALKKI", "GNEISSI", "MAGNEETTI", "MERIPIHKA", "HELMI", "SAFIIRI", "RUBIINI", "SMARAGDI", "TIMANTTI", "VOLFRAMI", "MAGNESIUM", "ALUMIINI", "PLATINA", "OBSIDIAANI", "JASPIS", "AKAATTI", "AMETISTI"], "plants": ["MÄNTY", "KOIVU", "HAAPA", "PIHLAJA", "LEPPÄ", "VAAHTERA", "TAMMI", "SAARNI", "LEHMUS", "JALAVA", "PAJU", "KATAJA", "KANERVA", "SAMMAL", "JÄKÄLÄ", "KAISLA", "RUOKO", "ORVOKKI", "KIELO", "VUOKKO", "LEINIKKI", "APILA", "OHDAKE", "NOKKONEN", "SANANJALKA", "KORTE", "VILLAKKO", "TUOMI", "SYREENI", "KAMOMILLA", "RUUSU", "NEILIKKA", "LUPIINI"], "berries": ["MUSTIKKA", "PUOLUKKA", "HILLA", "LAKKA", "KARPALO", "VADELMA", "MANSIKKA", "JUOLUKKA", "TYRNI", "ARONIA", "KARVIAINEN", "HERUKKA", "TATTI", "ROUSKU", "KANTARELLI", "HAPERO", "VAAPUKKA", "KORVASIENI", "MESIMARJA", "LILLUKKA"], "mammals": ["KARHU", "ILVES", "KETTU", "JÄNIS", "HIRVI", "PEURA", "PORO", "MAJAVA", "SAUKKO", "NÄÄTÄ", "KÄRPPÄ", "ORAVA", "SIILI", "MYYRÄ", "HILLERI", "AHMA", "MÄYRÄ", "LEPAKKO", "HYLJE", "NORPPA", "LUMIKKO", "PIISAMI", "SOPULI", "KAURIS", "VILLISIKA", "SUPIKOIRA", "MINKKI"], "birds": ["KOTKA", "HAUKKA", "HUUHKAJA", "PÖLLÖ", "KORPPI", "VARIS", "HARAKKA", "NÄRHI", "TIKKA", "KÄKI", "PEIPPO", "TIAINEN", "VARPUNEN", "JOUTSEN", "KURKI", "HAIKARA", "SORSA", "TELKKÄ", "KUIKKA", "KAAKKURI", "LOKKI", "TIIRA", "TEERI", "METSO", "PYY", "KIURU", "RASTAS", "SIRKKU", "KOTTARAINEN", "PÄÄSKY", "SIEPPO", "HIIRIHAUKKA", "KANAHAUKKA", "VARPUSHAUKKA", "KUOVI", "KIVITASKU"], "fish": ["HAUKI", "AHVEN", "LOHI", "TAIMEN", "SIIKA", "MUIKKU", "KUHA", "MADE", "SÄRKI", "LAHNA", "SILAKKA", "KIISKI", "HARJUS", "SALAKKA", "KAMPELA", "TURSKA", "SILLI", "SIMPUKKA", "RAPU", "ANKERIAS", "SAMMI", "NIERIÄ", "SÄYNE", "KOLMIPIIKKI"], "sky": ["TUULI", "MYRSKY", "SADE", "LUMI", "HALLA", "KUURA", "SUMU", "PILVI", "REVONTULI", "UKKONEN", "SALAMA", "TÄHTI", "AURINKO", "SATEENKAARI", "HANKI", "NIETOS", "TUISKU", "PAKKANEN", "HELLE", "RÄNTÄ", "TIHKU", "VIIMA", "PUHURI", "PUUSKA", "KOMEETTA", "METEORI", "PLANEETTA", "OTAVA", "KAAMOS", "ILTARUSKO"], "terrain": ["AALTO", "KOSKI", "PURO", "LAMPI", "SUO", "KANGAS", "HARJU", "KUMPU", "LAAKSO", "NIEMI", "SAARI", "LAHTI", "SALMI", "KARI", "LUOTO", "RINNE", "KALLIO", "LÄHDE", "JÄÄTIKKÖ", "TUNTURI", "RANTA", "KORPI", "RÄME", "NEVA", "JOKI", "VIRTA", "SUVANTO", "ROTKO", "DYYNI", "LAGUUNI", "KANJONI", "SELKÄ"], "tools": ["VASARA", "KIRVES", "SAHA", "PUUKKO", "LAPIO", "HARAVA", "VIIKATE", "AIRO", "ANKKURI", "KOMPASSI", "LYHTY", "KATTILA", "KAUHA", "KUKSA", "SUKSI", "SAUVA", "REKI", "TERVA", "KÖYSI", "SOLMU", "NAULA", "RUUVI", "MUTTERI", "SAKSET", "NEULA", "LANKA", "KELLO", "RUMPU", "KANTELE", "TORVI", "PILLI", "HUILU", "KIRNU", "VAAKA", "ALASIN", "TALTTA", "TIKAPUU", "ÄMPÄRI", "KYNTTILÄ"], "food": ["LEIPÄ", "PULLA", "PIIRAKKA", "KAKKU", "KEKSI", "PUURO", "KIISSELI", "MEHU", "KAHVI", "SUOLA", "PIPPURI", "SINAPPI", "HUNAJA", "JUUSTO", "MAKKARA", "NAKKI", "PERUNA", "PORKKANA", "NAURIS", "LANTTU", "KAALI", "SIPULI", "OMENA", "PÄÄRYNÄ", "LUUMU", "KIRSIKKA", "RUSINA", "MANTELI", "PÄHKINÄ", "KANELI", "INKIVÄÄRI"]}, "en": {"metals": ["COPPER", "IRON", "STEEL", "ZINC", "NICKEL", "COBALT", "CHROME", "BRONZE", "BRASS", "PLATINUM", "TITANIUM", "GRANITE", "QUARTZ", "MARBLE", "FLINT", "SLATE", "BASALT", "AMBER", "JADE", "OPAL", "GARNET", "TOPAZ", "ONYX", "PEWTER", "SAPPHIRE", "RUBY", "EMERALD", "TUNGSTEN", "MAGNESIUM", "OBSIDIAN", "JASPER", "AGATE", "AMETHYST", "GRAPHITE"], "plants": ["SPRUCE", "PINE", "BIRCH", "ASPEN", "ROWAN", "ALDER", "MAPLE", "OAK", "ELM", "WILLOW", "JUNIPER", "HAZEL", "CEDAR", "LARCH", "POPLAR", "BEECH", "HOLLY", "HEATHER", "FERN", "MOSS", "LICHEN", "REED", "CLOVER", "THISTLE", "IVY", "NETTLE", "TULIP", "DAISY", "LILY", "ORCHID", "LILAC", "LAVENDER", "ROSE", "CYPRESS"], "berries": ["BLUEBERRY", "LINGONBERRY", "CLOUDBERRY", "CRANBERRY", "RASPBERRY", "STRAWBERRY", "GOOSEBERRY", "CURRANT", "MUSHROOM", "CHANTERELLE", "BLACKBERRY", "ELDERBERRY", "MOREL", "TRUFFLE", "BOLETUS", "MULBERRY"], "mammals": ["BEAR", "LYNX", "WOLF", "FOX", "HARE", "MOOSE", "DEER", "BEAVER", "OTTER", "MARTEN", "ERMINE", "SQUIRREL", "BADGER", "HEDGEHOG", "WOLVERINE", "SEAL", "WALRUS", "BISON", "LEMMING", "WEASEL", "MUSKRAT", "REINDEER", "BOAR", "MINK", "RACCOON", "ELK"], "birds": ["EAGLE", "HAWK", "FALCON", "OWL", "RAVEN", "CROW", "MAGPIE", "JAY", "WOODPECKER", "CUCKOO", "FINCH", "SPARROW", "SWAN", "CRANE", "HERON", "LOON", "GULL", "TERN", "GROUSE", "PLOVER", "SWIFT", "LARK", "ROBIN", "WREN", "THRUSH", "STARLING", "PELICAN", "PUFFIN", "OSPREY", "KESTREL", "CONDOR", "CURLEW", "BUNTING"], "fish": ["PIKE", "PERCH", "SALMON", "TROUT", "WHITEFISH", "ZANDER", "BURBOT", "BREAM", "HERRING", "HADDOCK", "MACKEREL", "STURGEON", "CARP", "FLOUNDER", "MUSSEL", "CRAYFISH", "EEL", "CHAR", "GRAYLING", "OYSTER", "LOBSTER"], "sky": ["WIND", "STORM", "RAIN", "SNOW", "FROST", "MIST", "CLOUD", "THUNDER", "AURORA", "COMET", "METEOR", "BLIZZARD", "DRIZZLE", "SLEET", "GALE", "BREEZE", "TWILIGHT", "ECLIPSE", "NEBULA", "PLANET", "ZENITH", "RAINBOW", "MONSOON", "CYCLONE"], "terrain": ["RIVER", "BROOK", "POND", "MARSH", "RIDGE", "VALLEY", "ISLAND", "REEF", "DUNE", "CANYON", "MESA", "GLACIER", "FJORD", "HARBOR", "MEADOW", "ORCHARD", "QUARRY", "LAGOON", "TUNDRA", "SUMMIT", "BOULDER", "CREEK", "PRAIRIE", "PLATEAU", "CRATER", "GORGE", "RAPIDS", "CASCADE"], "tools": ["HAMMER", "AXE", "SAW", "SHOVEL", "RAKE", "ANCHOR", "COMPASS", "LANTERN", "KETTLE", "LADLE", "ROPE", "KNOT", "NAIL", "SCREW", "ANVIL", "CHISEL", "LADDER", "BUCKET", "CANDLE", "DRUM", "FLUTE", "HARP", "VIOLIN", "BARREL", "SLED", "PADDLE", "TORCH", "WHISTLE"], "food": ["BREAD", "BUN", "PIE", "CAKE", "BISCUIT", "PORRIDGE", "HONEY", "MUSTARD", "PEPPER", "CHEESE", "SAUSAGE", "POTATO", "CARROT", "TURNIP", "CABBAGE", "ONION", "APPLE", "PEAR", "PLUM", "CHERRY", "LEMON", "MANGO", "PEACH", "RAISIN", "ALMOND", "WALNUT", "CINNAMON", "GINGER", "PRETZEL"]}};
 
-/* MGRS map tool, version 2.16.0 (19 Nov 2026). Version history: guide.html#versions */
-const APP_VERSION = "2.16.0", APP_DATE = "2026-11-19";
+/* MGRS map tool, version 2.17.0 (19 Nov 2026). Version history: guide.html#versions */
+const APP_VERSION = "2.17.0", APP_DATE = "2026-11-19";
 "use strict";
 /* ================= helpers ================= */
 const $ = id => document.getElementById(id);
@@ -7046,7 +7058,102 @@ document.addEventListener("keydown", e => {
 });
 document.addEventListener("pointerdown", e => { if (SR.open && !$("searchBox").contains(e.target) && !$("searchBtn").contains(e.target)) closeSearch(); });
 
+/* ================= background data downloads ================= */
+// R and D areas, UAS zones and aerial photography restriction areas as GeoJSON, KML or KMZ,
+// built in the browser from the same data the map shows.
+const BG_SETS = [
+  { key:"R",  file:"EFR_restricted_areas",   label:"R areas (restricted)",          test:a => a.t === "R",  src:"Finnish eAIP ENR 5.1 (AIRAC 004-2024)" },
+  { key:"D",  file:"EFD_danger_areas",       label:"D areas (danger)",              test:a => a.t === "D",  src:"Traficom OPS M1-28, annex 1 (2023)" },
+  { key:"U",  file:"UAS_zones",              label:"UAS zones",                     test:a => !!a.uas,      src:() => "Traficom UAS zones, data version " + UAS_VERSION },
+  { key:"PH", file:"Aerial_photography_restriction_areas", label:"Aerial photography restriction areas", test:a => !!a.photo, src:() => "Finnish Defence Forces, public data (JULK), up to date " + PHOTO_DATE },
+  { key:"ALL", file:"Airspace_areas_all",    label:"Everything in one file",        test:() => true,        src:"All of the above" }
+];
+const BG_NOTICE = "Unofficial, not for navigation. Activation is not included: check NOTAMs and/or Flyk.com for the current situation.";
+const bgSrc = s => typeof s.src === "function" ? s.src() : s.src;
+const ring6 = a => { const r = a.ll.map(p => [+p.lng.toFixed(6), +p.lat.toFixed(6)]); if (!a.isLine) r.push(r[0]); return r; };
+function areaProps(a){
+  const p = { id:a.id, name:a.name, kind:AREA_KIND[a.t] };
+  if (a.uas){ p.restriction = { UP:"PROHIBITED", UA:"REQ_AUTHORISATION", UN:"NO_RESTRICTION" }[a.t]; p.reason = a.why; p.upper = a.up || null; p.lower = a.lo || null; }
+  else if (a.photo){ p.number = a.nro || null; p.unit = a.org || null; }
+  else { p.upper = a.up; p.lower = a.lo; if (a.act) p.activity = a.act; if (a.tm) p.times = a.tm; if (a.note) p.note = a.note; }
+  return p;
+}
+function bgGeoJSON(set){
+  const list = AREAS.filter(set.test);
+  return JSON.stringify({ type:"FeatureCollection", name:set.file, source:bgSrc(set), notice:BG_NOTICE,
+    generator:"MGRS map tool " + APP_VERSION, exported:new Date().toISOString(),
+    features: list.map(a => ({ type:"Feature", properties:areaProps(a),
+      geometry: a.isLine ? { type:"LineString", coordinates:ring6(a) } : { type:"Polygon", coordinates:[ring6(a)] } })) }, null, 1);
+}
+function bgKML(set){
+  const x = s => esc(String(s));
+  const kc = (hex, al) => { const h = hex.replace("#", ""); return al + h.slice(4,6) + h.slice(2,4) + h.slice(0,2); };
+  const list = AREAS.filter(set.test);
+  const types = AREA_TYPES.filter(t => list.some(a => a.t === t));
+  let k = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>' + x(set.label) + '</name>\n' +
+    '<description>' + x(bgSrc(set) + ". " + BG_NOTICE + " Exported " + stamp() + " by MGRS map tool " + APP_VERSION + ".") + '</description>\n';
+  types.forEach(t => { k += '<Style id="s' + t + '"><LineStyle><color>' + kc(COL[t], "ff") + '</color><width>2</width></LineStyle><PolyStyle><color>' + kc(COL[t], "40") + '</color></PolyStyle></Style>\n'; });
+  types.forEach(t => {
+    k += '<Folder><name>' + x(AREA_KIND[t]) + '</name>\n';
+    list.filter(a => a.t === t).forEach(a => {
+      const p = areaProps(a), desc = Object.keys(p).filter(q => p[q] !== null && q !== "name").map(q => q + ": " + p[q]).join("\n");
+      const c = ring6(a).map(q => q[0] + "," + q[1] + ",0").join(" ");
+      k += '<Placemark><name>' + x(named(a) ? a.name : a.id + (a.name ? " " + a.name : "")) + '</name><description>' + x(desc) + '</description><styleUrl>#s' + t + '</styleUrl>' +
+        (a.isLine ? '<LineString><tessellate>1</tessellate><coordinates>' + c + '</coordinates></LineString>'
+                  : '<Polygon><tessellate>1</tessellate><outerBoundaryIs><LinearRing><coordinates>' + c + '</coordinates></LinearRing></outerBoundaryIs></Polygon>') + '</Placemark>\n';
+    });
+    k += '</Folder>\n';
+  });
+  return k + '</Document></kml>\n';
+}
+// A small ZIP writer for KMZ (one file, doc.kml). Compressed when the browser can, stored otherwise.
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b){ let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+async function zipOne(name, data){
+  let body = data, method = 0;
+  if (canZip){ try { body = await streamBytes(data, new CompressionStream("deflate-raw")); method = 8; } catch(e){ body = data; method = 0; } }
+  const nm = new TextEncoder().encode(name), crc = crc32(data), d = new Date();
+  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  const loc = new DataView(new ArrayBuffer(30)), cen = new DataView(new ArrayBuffer(46)), end = new DataView(new ArrayBuffer(22));
+  [[0,0x04034b50,4],[4,20,2],[6,0x0800,2],[8,method,2],[10,time,2],[12,date,2],[14,crc,4],[18,body.length,4],[22,data.length,4],[26,nm.length,2],[28,0,2]]
+    .forEach(([o,v,s]) => s === 4 ? loc.setUint32(o, v, true) : loc.setUint16(o, v, true));
+  [[0,0x02014b50,4],[4,20,2],[6,20,2],[8,0x0800,2],[10,method,2],[12,time,2],[14,date,2],[16,crc,4],[20,body.length,4],[24,data.length,4],[28,nm.length,2],[30,0,2],[32,0,2],[34,0,2],[36,0,2],[38,0,4],[42,0,4]]
+    .forEach(([o,v,s]) => s === 4 ? cen.setUint32(o, v, true) : cen.setUint16(o, v, true));
+  const cdOff = 30 + nm.length + body.length, cdSize = 46 + nm.length;
+  [[0,0x06054b50,4],[4,0,2],[6,0,2],[8,1,2],[10,1,2],[12,cdSize,4],[16,cdOff,4],[20,0,2]]
+    .forEach(([o,v,s]) => s === 4 ? end.setUint32(o, v, true) : end.setUint16(o, v, true));
+  return new Blob([loc.buffer, nm, body, cen.buffer, nm, end.buffer], { type:"application/vnd.google-earth.kmz" });
+}
+async function bgDownload(key, fmt){
+  const set = BG_SETS.find(s => s.key === key); if (!set) return;
+  const n = AREAS.filter(set.test).length, base = set.file + "_" + stamp();
+  if (fmt === "geojson") download(base + ".geojson", bgGeoJSON(set), "application/geo+json");
+  else if (fmt === "kml") download(base + ".kml", bgKML(set), "application/vnd.google-earth.kml+xml");
+  else {
+    const blob = await zipOne("doc.kml", new TextEncoder().encode(bgKML(set)));
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = base + ".kmz";
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
+  toast("Downloaded " + set.label.toLowerCase() + ": " + n + " areas as " + fmt.toUpperCase());
+}
+function renderBgDownloads(){
+  const box = $("bgList"); if (!box) return;
+  box.innerHTML = "";
+  BG_SETS.forEach(s => {
+    const n = AREAS.filter(s.test).length;
+    const row = document.createElement("div"); row.className = "bg-row";
+    row.innerHTML = '<div class="bg-t"><b></b><small></small></div><div class="bg-b">' +
+      ["geojson","kml","kmz"].map(f => '<button type="button" class="btn ghost sm" data-k="' + s.key + '" data-f="' + f + '">' + (f === "geojson" ? "GeoJSON" : f.toUpperCase()) + '</button>').join("") + '</div>';
+    row.querySelector("b").textContent = s.label;
+    row.querySelector("small").textContent = n + " areas" + (s.key === "ALL" ? "" : ", " + bgSrc(s));
+    box.appendChild(row);
+  });
+}
+$("bgList").addEventListener("click", e => { const b = e.target.closest("button[data-k]"); if (b) bgDownload(b.dataset.k, b.dataset.f); });
+
 /* ================= start ================= */
+renderBgDownloads();
 $("activeNoteTop").innerHTML = ACTIVE_NOTE;
 syncCrsControls();
 $("activeNoteMenu").innerHTML = ACTIVE_NOTE;

@@ -579,6 +579,7 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
             <li><b>Moving points and corners:</b> hold then drag, drag straight away, or off.</li>
             <li><b>Names for new points:</b> numbered (Point 1, Point 2) or random codewords in Finnish, English or both. Pick a theme such as metals and stones, any theme, or <b>Random theme</b>, which gives each shape or batch one theme of its own. Optionally name the corners of shapes, circle centres and vector start points too.</li>
             <li><b>Your own word lists:</b> paste words or load a .txt or .csv file, give the list a name, and press Use. Repeats and radio-unsafe words are left out, and you are told which.</li>
+            <li><b>Background data:</b> download the R and D areas, the UAS zones, the aerial photography restriction areas, or all of them in one file, as GeoJSON, KML or KMZ for other map programs.</li>
             <li><b>Map:</b> names of your drawings on the map, and the area lock.</li>
             <li><b>User guide:</b> the link at the top opens this page.</li>
           </ul>
@@ -609,6 +610,7 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
       <p class="intro">The version you have is shown at the bottom of the Settings tab. Numbers go major.minor.patch: the middle number grows with new features, the last one with fixes only.</p>
       <p>If your phone shows an older number than the newest one here, reload the page. Browsers sometimes keep an old copy for a while.</p>
       <ol class="versions">
+        <li><div class="vh2"><b>2.17.0</b><span>19 Nov 2026</span></div><ul><li>Background data downloads in Settings: R areas, D areas, UAS zones, aerial photography restriction areas, or everything in one file, as GeoJSON, KML or KMZ.</li></ul></li>
         <li><div class="vh2"><b>2.16.0</b><span>19 Nov 2026</span></div><ul><li>The coordinate format can be changed at any time: from the button on the coordinate readout, under the coordinates in every details box, and in the coordinate panel, as well as in Settings and in an area's details.</li></ul></li>
         <li><div class="vh2"><b>2.15.0</b><span>19 Nov 2026</span></div><ul><li>Choose the coordinate system: MGRS, UTM, ETRS-TM35FIN, decimal degrees, degrees and decimal minutes, or degrees, minutes and seconds. It applies to the readout, details, area corner lists and copying, and can also be switched in an area's details.</li><li>UTM and ETRS-TM35FIN coordinates can be typed, pasted and searched.</li></ul></li>
         <li><div class="vh2"><b>2.14.0</b><span>30 Oct 2026</span></div><ul><li>The Defence Forces' public aerial photography restriction areas (up to date 3/2023) as their own layer, searchable, with MGRS corners.</li></ul></li>
@@ -634,7 +636,7 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
   </main>
 </div>
 
-<footer><div class="in"><span>Guide for version 2.16.0. <a href="../">Oscar Nissin</a>. Symbols drawn with milsymbol (MIT). Maps © OpenStreetMap contributors, OpenTopoMap, Esri.</span><a href="./">Open the map tool</a></div></footer>
+<footer><div class="in"><span>Guide for version 2.17.0. <a href="../">Oscar Nissin</a>. Symbols drawn with milsymbol (MIT). Maps © OpenStreetMap contributors, OpenTopoMap, Esri.</span><a href="./">Open the map tool</a></div></footer>
 
 <dialog class="lb" id="lb" aria-label="Enlarged picture"><button type="button" id="lbClose" aria-label="Close">×</button><img id="lbImg" alt=""></dialog>
 <script>
