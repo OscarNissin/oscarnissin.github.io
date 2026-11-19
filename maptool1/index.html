@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- MGRS map tool 2.17.0, 2026-11-19 -->
+<!-- MGRS map tool 2.18.0, 2026-11-19 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f2430">
-<meta name="version" content="2.17.0">
+<meta name="version" content="2.18.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1201,6 +1201,51 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
   .zoomgrp{display:none}
 }
 @media (prefers-reduced-motion:reduce){.panel{transition:none}#toast{transition:none}}
+/* weather */
+#wxBtn{position:relative}
+#wxBtn.wxon{color:var(--teal)}
+#wxBtn.wxon svg{transform:translateY(-4px)}
+.wxbadge{position:absolute;left:1px;right:1px;bottom:3px;font:600 9px/1 var(--mono);color:var(--teal);text-align:center;pointer-events:none;white-space:nowrap}
+.wxpanel{width:270px;max-height:calc(100% - 24px);overflow:auto}
+.wxpanel .wx-unit{display:flex;align-items:center;gap:.45rem;padding:.22rem 0;color:var(--muted);font-size:.86rem}
+.wxpanel .wx-unit select{font-size:.86rem;padding:.1rem .25rem}
+.wx-here{width:100%;margin:.1rem 0 .7rem}
+.wx-here[aria-pressed=true]{background:var(--night);color:#fff;border-color:var(--night)}
+.wx-when{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;margin-bottom:.25rem}
+.wx-when b{font:500 .95rem var(--mono);white-space:nowrap}
+.wx-when span{font-size:.76rem;color:var(--muted);text-align:right}
+.wx-slide{display:flex;gap:.35rem;align-items:center}
+.wx-slide input{flex:1;min-width:0;accent-color:var(--teal);margin:0}
+.wx-slide .btn{flex:none;min-width:2rem}
+.wx-ticks{display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted);margin:.15rem 3.4rem 0 2.4rem}
+.wx-legend{display:flex;flex-wrap:wrap;align-items:center;gap:.15rem .55rem;margin-top:.55rem;font-size:.74rem;color:var(--muted)}
+.wx-legend i{display:inline-block;width:.6rem;height:.6rem;border-radius:2px;margin-right:.2rem;vertical-align:-1px}
+.wx-msg{margin:.5rem 0 0;font-size:.8rem;color:#8c1d18}
+.wx-msg:empty{display:none}
+.wx-arming,.wx-arming .leaflet-interactive{cursor:crosshair!important}
+.wxa{background:none;border:0}
+.wxa svg{display:block;overflow:visible}
+.wxa span{position:absolute;left:50%;top:37px;transform:translateX(-50%);padding:0 3px;border-radius:3px;background:rgba(255,255,255,.82);font:700 12px/1.15 var(--mono);white-space:nowrap}
+.wxa small{font-size:9px;font-weight:600;margin-left:3px;color:var(--ink)}
+.wxpop .leaflet-popup-content{min-width:260px}
+.wxp-h{display:flex;justify-content:space-between;align-items:baseline;gap:.75rem;margin-bottom:.45rem}
+.wxp-h span{font:500 .8rem var(--mono);color:var(--muted)}
+.wxp-now{display:flex;gap:.8rem;align-items:center;padding:.45rem .55rem;background:var(--hover);border-radius:6px}
+.wxp-t{font:600 1.7rem/1 var(--sans);min-width:3.2rem}
+.wxp .small{margin:.35rem 0 .5rem}
+.wxp-tbl{max-height:240px;overflow:auto;border-top:1px solid var(--line)}
+.wxp-tbl table{border-collapse:collapse;width:100%;font:500 .76rem var(--mono);white-space:nowrap}
+.wxp-tbl th{position:sticky;top:0;background:#fff;font:600 .7rem var(--sans);color:var(--muted);text-align:right;padding:.3rem .35rem;border-bottom:1px solid var(--line)}
+.wxp-tbl th:nth-child(-n+2),.wxp-tbl td:nth-child(-n+2){text-align:left}
+.wxp-tbl td{text-align:right;padding:.22rem .35rem;border-bottom:1px solid var(--hover)}
+.wxp-tbl tr[data-t]{cursor:pointer}
+.wxp-tbl tr[data-t]:hover td{background:var(--hover)}
+.wxp-tbl tr.sel td{background:var(--sel)}
+.wxp-tbl tr.day td{border-top:2px solid var(--line)}
+.wxp-tbl td i{display:inline-block;font-style:normal;margin-right:2px}
+.wxp-tbl td.wx{font-family:var(--sans);max-width:7.5rem;overflow:hidden;text-overflow:ellipsis}
+.wxp-tbl .pp{color:var(--muted)}
+@media (max-width:760px){.wxpanel{width:min(270px,calc(100vw - 74px))}}
 </style>
 </head>
 <body>
@@ -1412,6 +1457,7 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
         <div class="cgroup">
           <button class="cbtn" id="searchBtn" type="button" aria-label="Search places, coordinates, areas and your drawings" title="Search (Ctrl+K)" aria-controls="searchBox"></button>
           <button class="cbtn" id="mapMenuBtn" type="button" aria-label="Background map and overlays" title="Background map and overlays" aria-expanded="false" aria-controls="mapMenu"></button>
+          <button class="cbtn" id="wxBtn" type="button" aria-label="Weather: rain radar and forecast" title="Weather: rain radar and forecast" aria-expanded="false" aria-controls="wxPanel"></button>
           <button class="cbtn" id="locBtn" type="button" aria-label="Show my location" title="Show my location"></button>
           <button class="cbtn" id="homeBtn" type="button" aria-label="Zoom to Finland" title="Zoom to Finland"></button>
         </div>
@@ -1442,6 +1488,21 @@ i.sw.UP{background:#a1006b}i.sw.UA{background:#6a3fb5}i.sw.UN{background:#2e7d32
           <button type="button" class="btn ghost sm" id="mmHideAll" style="margin-top:.35rem">Hide all areas</button>
           <p class="activenote mm" id="activeNoteMenu"></p>
         </fieldset>
+      </div>
+
+      <div class="mapmenu wxpanel" id="wxPanel" hidden role="dialog" aria-label="Weather">
+        <fieldset><legend>Weather on the map</legend>
+          <label><input type="checkbox" id="wxRadar"> Rain radar (now and past 2 h)</label>
+          <label><input type="checkbox" id="wxWind"> Wind forecast arrows</label>
+          <label class="wx-unit">Wind in <select id="wxUnit" aria-label="Wind speed unit"><option value="ms">m/s</option><option value="kt">knots</option></select></label>
+        </fieldset>
+        <button type="button" class="btn ghost sm wx-here" id="wxHere" aria-pressed="false">Forecast at a point</button>
+        <div class="wx-when"><b id="wxWhen">&ndash;</b><span id="wxWhenNote"></span></div>
+        <div class="wx-slide"><button type="button" class="btn ghost sm" id="wxPlay" aria-label="Play">&#9654;</button><input type="range" id="wxTime" min="0" max="0" step="1" value="0" aria-label="Time"><button type="button" class="btn ghost sm" id="wxNow">Now</button></div>
+        <div class="wx-ticks" id="wxTicks"></div>
+        <div class="wx-legend" id="wxLegend"></div>
+        <p class="wx-msg" id="wxMsg" role="status"></p>
+        <p class="small">Radar: RainViewer, past only and coarse when zoomed in. Forecasts: Open-Meteo model data. Not official aviation weather: check METAR/TAF and NOTAMs before flying.</p>
       </div>
 
       <div class="searchbox" id="searchBox" hidden role="dialog" aria-label="Search">
@@ -3875,8 +3936,8 @@ const PHOTO = [{"id":"IKR1","nro":"1","name":"Taipalsaaren ampuma-alue","org":"M
 
 const WORDS = {"labels": {"metals": "Metals and stones", "plants": "Trees and plants", "berries": "Berries and mushrooms", "mammals": "Mammals", "birds": "Birds", "fish": "Fish and water life", "sky": "Weather and sky", "terrain": "Terrain and water", "tools": "Tools and things", "food": "Food"}, "fi": {"metals": ["KUPARI", "TERÄS", "SINKKI", "RAUTA", "HOPEA", "PRONSSI", "MESSINKI", "TINA", "LYIJY", "NIKKELI", "KROMI", "KOBOLTTI", "TITAANI", "MALMI", "GRANIITTI", "KVARTSI", "MARMORI", "LIUSKE", "SAVI", "HIEKKA", "SORA", "KALKKI", "GNEISSI", "MAGNEETTI", "MERIPIHKA", "HELMI", "SAFIIRI", "RUBIINI", "SMARAGDI", "TIMANTTI", "VOLFRAMI", "MAGNESIUM", "ALUMIINI", "PLATINA", "OBSIDIAANI", "JASPIS", "AKAATTI", "AMETISTI"], "plants": ["MÄNTY", "KOIVU", "HAAPA", "PIHLAJA", "LEPPÄ", "VAAHTERA", "TAMMI", "SAARNI", "LEHMUS", "JALAVA", "PAJU", "KATAJA", "KANERVA", "SAMMAL", "JÄKÄLÄ", "KAISLA", "RUOKO", "ORVOKKI", "KIELO", "VUOKKO", "LEINIKKI", "APILA", "OHDAKE", "NOKKONEN", "SANANJALKA", "KORTE", "VILLAKKO", "TUOMI", "SYREENI", "KAMOMILLA", "RUUSU", "NEILIKKA", "LUPIINI"], "berries": ["MUSTIKKA", "PUOLUKKA", "HILLA", "LAKKA", "KARPALO", "VADELMA", "MANSIKKA", "JUOLUKKA", "TYRNI", "ARONIA", "KARVIAINEN", "HERUKKA", "TATTI", "ROUSKU", "KANTARELLI", "HAPERO", "VAAPUKKA", "KORVASIENI", "MESIMARJA", "LILLUKKA"], "mammals": ["KARHU", "ILVES", "KETTU", "JÄNIS", "HIRVI", "PEURA", "PORO", "MAJAVA", "SAUKKO", "NÄÄTÄ", "KÄRPPÄ", "ORAVA", "SIILI", "MYYRÄ", "HILLERI", "AHMA", "MÄYRÄ", "LEPAKKO", "HYLJE", "NORPPA", "LUMIKKO", "PIISAMI", "SOPULI", "KAURIS", "VILLISIKA", "SUPIKOIRA", "MINKKI"], "birds": ["KOTKA", "HAUKKA", "HUUHKAJA", "PÖLLÖ", "KORPPI", "VARIS", "HARAKKA", "NÄRHI", "TIKKA", "KÄKI", "PEIPPO", "TIAINEN", "VARPUNEN", "JOUTSEN", "KURKI", "HAIKARA", "SORSA", "TELKKÄ", "KUIKKA", "KAAKKURI", "LOKKI", "TIIRA", "TEERI", "METSO", "PYY", "KIURU", "RASTAS", "SIRKKU", "KOTTARAINEN", "PÄÄSKY", "SIEPPO", "HIIRIHAUKKA", "KANAHAUKKA", "VARPUSHAUKKA", "KUOVI", "KIVITASKU"], "fish": ["HAUKI", "AHVEN", "LOHI", "TAIMEN", "SIIKA", "MUIKKU", "KUHA", "MADE", "SÄRKI", "LAHNA", "SILAKKA", "KIISKI", "HARJUS", "SALAKKA", "KAMPELA", "TURSKA", "SILLI", "SIMPUKKA", "RAPU", "ANKERIAS", "SAMMI", "NIERIÄ", "SÄYNE", "KOLMIPIIKKI"], "sky": ["TUULI", "MYRSKY", "SADE", "LUMI", "HALLA", "KUURA", "SUMU", "PILVI", "REVONTULI", "UKKONEN", "SALAMA", "TÄHTI", "AURINKO", "SATEENKAARI", "HANKI", "NIETOS", "TUISKU", "PAKKANEN", "HELLE", "RÄNTÄ", "TIHKU", "VIIMA", "PUHURI", "PUUSKA", "KOMEETTA", "METEORI", "PLANEETTA", "OTAVA", "KAAMOS", "ILTARUSKO"], "terrain": ["AALTO", "KOSKI", "PURO", "LAMPI", "SUO", "KANGAS", "HARJU", "KUMPU", "LAAKSO", "NIEMI", "SAARI", "LAHTI", "SALMI", "KARI", "LUOTO", "RINNE", "KALLIO", "LÄHDE", "JÄÄTIKKÖ", "TUNTURI", "RANTA", "KORPI", "RÄME", "NEVA", "JOKI", "VIRTA", "SUVANTO", "ROTKO", "DYYNI", "LAGUUNI", "KANJONI", "SELKÄ"], "tools": ["VASARA", "KIRVES", "SAHA", "PUUKKO", "LAPIO", "HARAVA", "VIIKATE", "AIRO", "ANKKURI", "KOMPASSI", "LYHTY", "KATTILA", "KAUHA", "KUKSA", "SUKSI", "SAUVA", "REKI", "TERVA", "KÖYSI", "SOLMU", "NAULA", "RUUVI", "MUTTERI", "SAKSET", "NEULA", "LANKA", "KELLO", "RUMPU", "KANTELE", "TORVI", "PILLI", "HUILU", "KIRNU", "VAAKA", "ALASIN", "TALTTA", "TIKAPUU", "ÄMPÄRI", "KYNTTILÄ"], "food": ["LEIPÄ", "PULLA", "PIIRAKKA", "KAKKU", "KEKSI", "PUURO", "KIISSELI", "MEHU", "KAHVI", "SUOLA", "PIPPURI", "SINAPPI", "HUNAJA", "JUUSTO", "MAKKARA", "NAKKI", "PERUNA", "PORKKANA", "NAURIS", "LANTTU", "KAALI", "SIPULI", "OMENA", "PÄÄRYNÄ", "LUUMU", "KIRSIKKA", "RUSINA", "MANTELI", "PÄHKINÄ", "KANELI", "INKIVÄÄRI"]}, "en": {"metals": ["COPPER", "IRON", "STEEL", "ZINC", "NICKEL", "COBALT", "CHROME", "BRONZE", "BRASS", "PLATINUM", "TITANIUM", "GRANITE", "QUARTZ", "MARBLE", "FLINT", "SLATE", "BASALT", "AMBER", "JADE", "OPAL", "GARNET", "TOPAZ", "ONYX", "PEWTER", "SAPPHIRE", "RUBY", "EMERALD", "TUNGSTEN", "MAGNESIUM", "OBSIDIAN", "JASPER", "AGATE", "AMETHYST", "GRAPHITE"], "plants": ["SPRUCE", "PINE", "BIRCH", "ASPEN", "ROWAN", "ALDER", "MAPLE", "OAK", "ELM", "WILLOW", "JUNIPER", "HAZEL", "CEDAR", "LARCH", "POPLAR", "BEECH", "HOLLY", "HEATHER", "FERN", "MOSS", "LICHEN", "REED", "CLOVER", "THISTLE", "IVY", "NETTLE", "TULIP", "DAISY", "LILY", "ORCHID", "LILAC", "LAVENDER", "ROSE", "CYPRESS"], "berries": ["BLUEBERRY", "LINGONBERRY", "CLOUDBERRY", "CRANBERRY", "RASPBERRY", "STRAWBERRY", "GOOSEBERRY", "CURRANT", "MUSHROOM", "CHANTERELLE", "BLACKBERRY", "ELDERBERRY", "MOREL", "TRUFFLE", "BOLETUS", "MULBERRY"], "mammals": ["BEAR", "LYNX", "WOLF", "FOX", "HARE", "MOOSE", "DEER", "BEAVER", "OTTER", "MARTEN", "ERMINE", "SQUIRREL", "BADGER", "HEDGEHOG", "WOLVERINE", "SEAL", "WALRUS", "BISON", "LEMMING", "WEASEL", "MUSKRAT", "REINDEER", "BOAR", "MINK", "RACCOON", "ELK"], "birds": ["EAGLE", "HAWK", "FALCON", "OWL", "RAVEN", "CROW", "MAGPIE", "JAY", "WOODPECKER", "CUCKOO", "FINCH", "SPARROW", "SWAN", "CRANE", "HERON", "LOON", "GULL", "TERN", "GROUSE", "PLOVER", "SWIFT", "LARK", "ROBIN", "WREN", "THRUSH", "STARLING", "PELICAN", "PUFFIN", "OSPREY", "KESTREL", "CONDOR", "CURLEW", "BUNTING"], "fish": ["PIKE", "PERCH", "SALMON", "TROUT", "WHITEFISH", "ZANDER", "BURBOT", "BREAM", "HERRING", "HADDOCK", "MACKEREL", "STURGEON", "CARP", "FLOUNDER", "MUSSEL", "CRAYFISH", "EEL", "CHAR", "GRAYLING", "OYSTER", "LOBSTER"], "sky": ["WIND", "STORM", "RAIN", "SNOW", "FROST", "MIST", "CLOUD", "THUNDER", "AURORA", "COMET", "METEOR", "BLIZZARD", "DRIZZLE", "SLEET", "GALE", "BREEZE", "TWILIGHT", "ECLIPSE", "NEBULA", "PLANET", "ZENITH", "RAINBOW", "MONSOON", "CYCLONE"], "terrain": ["RIVER", "BROOK", "POND", "MARSH", "RIDGE", "VALLEY", "ISLAND", "REEF", "DUNE", "CANYON", "MESA", "GLACIER", "FJORD", "HARBOR", "MEADOW", "ORCHARD", "QUARRY", "LAGOON", "TUNDRA", "SUMMIT", "BOULDER", "CREEK", "PRAIRIE", "PLATEAU", "CRATER", "GORGE", "RAPIDS", "CASCADE"], "tools": ["HAMMER", "AXE", "SAW", "SHOVEL", "RAKE", "ANCHOR", "COMPASS", "LANTERN", "KETTLE", "LADLE", "ROPE", "KNOT", "NAIL", "SCREW", "ANVIL", "CHISEL", "LADDER", "BUCKET", "CANDLE", "DRUM", "FLUTE", "HARP", "VIOLIN", "BARREL", "SLED", "PADDLE", "TORCH", "WHISTLE"], "food": ["BREAD", "BUN", "PIE", "CAKE", "BISCUIT", "PORRIDGE", "HONEY", "MUSTARD", "PEPPER", "CHEESE", "SAUSAGE", "POTATO", "CARROT", "TURNIP", "CABBAGE", "ONION", "APPLE", "PEAR", "PLUM", "CHERRY", "LEMON", "MANGO", "PEACH", "RAISIN", "ALMOND", "WALNUT", "CINNAMON", "GINGER", "PRETZEL"]}};
 
-/* MGRS map tool, version 2.17.0 (19 Nov 2026). Version history: guide.html#versions */
-const APP_VERSION = "2.17.0", APP_DATE = "2026-11-19";
+/* MGRS map tool, version 2.18.0 (19 Nov 2026). Version history: guide.html#versions */
+const APP_VERSION = "2.18.0", APP_DATE = "2026-11-19";
 "use strict";
 /* ================= helpers ================= */
 const $ = id => document.getElementById(id);
@@ -4258,7 +4319,7 @@ AREAS.forEach(a => {
     ? L.polyline(a.ll, { renderer:areaRenderer, pane:"areas", color:col, weight:2, opacity:.85 })
     : L.polygon(a.ll, { renderer:areaRenderer, pane:"areas", color:col, weight:1.2, opacity:.8, fillColor:col, fillOpacity: a.uas || a.photo ? .14 : .1, dashArray: a.t === "D" ? "5 4" : a.uas ? "2 3" : a.photo ? "8 3 2 3" : null });
   shp.bindTooltip(a.uas ? a.name + " (" + AREA_KIND[a.t].replace("UAS zone: ", "") + ")" : a.photo ? a.name + " (aerial photography restriction)" : a.id + (a.name ? " " + a.name : ""), { sticky:true, direction:"top", offset:[0,-6] });
-  shp.on("click", () => { if (tool === "pan" && !S.areaLock && !EDIT){ showTab("areas", true); selectArea(a.id); } });
+  shp.on("click", () => { if (tool === "pan" && !S.areaLock && !EDIT && !wxArming()){ showTab("areas", true); selectArea(a.id); } });
   areaGroups[a.t].addLayer(shp);
 });
 function applyAreaVis(){
@@ -6122,6 +6183,7 @@ map.on("move", () => { if (useCenter()){ hover = null; updateReadout(); if (tool
 document.addEventListener("keydown", e => {
   const tag = (e.target.tagName || "").toLowerCase();
   if (tag === "input" || tag === "select" || tag === "textarea") return;
+  if (e.key === "Escape" && wxEsc()) return;
   if (e.key === "Escape" && SR.open){ closeSearch(); return; }
   if (e.key === "Escape" && CP.open){ closeCoordPanel(); return; }
   if (e.key === "Escape" && !$("mvPanel").hidden){ closeMove(); return; }
@@ -7151,6 +7213,297 @@ function renderBgDownloads(){
   });
 }
 $("bgList").addEventListener("click", e => { const b = e.target.closest("button[data-k]"); if (b) bgDownload(b.dataset.k, b.dataset.f); });
+
+/* ================= weather ================= */
+// Rain radar from RainViewer: the latest image and about 2 h back. The free service has no radar forecast and
+// stops at zoom 7, so tiles are enlarged above that. Forecasts are model data from Open-Meteo.
+// Both are free, need no key and are called straight from the browser. Neither is official aviation weather.
+const WX_RV = "https://api.rainviewer.com/public/weather-maps.json";
+const WX_OM = "https://api.open-meteo.com/v1/forecast";
+const WX_HOURS = 48;
+const WX_ATTR_RV = 'Radar <a href="https://www.rainviewer.com/" target="_blank" rel="noopener">RainViewer</a>';
+const WX_ATTR_OM = 'Forecast <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>';
+const WX_CODE = { 0:"Clear", 1:"Mostly clear", 2:"Partly cloudy", 3:"Overcast", 45:"Fog", 48:"Rime fog",
+  51:"Light drizzle", 53:"Drizzle", 55:"Heavy drizzle", 56:"Freezing drizzle", 57:"Freezing drizzle",
+  61:"Light rain", 63:"Rain", 65:"Heavy rain", 66:"Freezing rain", 67:"Freezing rain", 71:"Light snow", 73:"Snow",
+  75:"Heavy snow", 77:"Snow grains", 80:"Light showers", 81:"Showers", 82:"Heavy showers", 85:"Snow showers",
+  86:"Heavy snow showers", 95:"Thunderstorm", 96:"Thunderstorm, hail", 99:"Thunderstorm, hail" };
+const WX_STEPS = [[4,"#2f9e6b"],[8,"#b5960e"],[12,"#e07b24"],[17,"#d23c3c"],[Infinity,"#8a35c9"]]; // m/s
+const WX_COMPASS = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const WX = { frames:[], host:"", stops:[], idx:0, nowIdx:0, layers:{}, shown:null, grid:null, gridKey:"",
+  gridAbort:null, gridT:null, play:null, tick:0, arming:false, point:null };
+if (typeof S.wxRadar !== "boolean") S.wxRadar = false;
+if (typeof S.wxWind !== "boolean") S.wxWind = false;
+if (!["ms","kt"].includes(S.wxU)) S.wxU = "ms";
+map.createPane("wxRadar"); map.getPane("wxRadar").style.zIndex = 250; map.getPane("wxRadar").style.pointerEvents = "none";
+map.createPane("wxWind"); map.getPane("wxWind").style.zIndex = 450; map.getPane("wxWind").style.pointerEvents = "none";
+const wxWindLayer = L.layerGroup();
+function wxArming(){ return WX.arming; }
+const wxNil = v => v == null || isNaN(v);
+const wxKt = () => S.wxU === "kt";
+const wxUnit = () => wxKt() ? "kt" : "m/s";
+const wxSpd = v => wxNil(v) ? "–" : String(Math.round(wxKt() ? v*1.943844 : v));
+const wxSpd1 = v => wxNil(v) ? "–" : wxKt() ? String(Math.round(v*1.943844)) : String(Math.round(v*10)/10);
+const wxCol = v => WX_STEPS.find(s => v < s[0])[1];
+const wxCompass = d => WX_COMPASS[Math.round(norm360(d)/22.5) % 16];
+const wxTime = t => new Date(t*1000).toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
+const wxDay = t => new Date(t*1000).toLocaleDateString("en-GB", { weekday:"short" });
+const wxR0 = v => wxNil(v) ? "–" : String(Math.round(v));
+const wxR1 = v => wxNil(v) ? "–" : String(Math.round(v*10)/10);
+function wxNear(arr, t){ let b = 0, bd = Infinity; arr.forEach((x, i) => { const d = Math.abs(x - t); if (d < bd){ bd = d; b = i; } }); return b; }
+async function wxJSON(url, signal){ const r = await fetch(url, { signal }); if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); }
+const wxMsg = t => { $("wxMsg").textContent = t || ""; };
+const wxOn = () => S.wxRadar || S.wxWind;
+
+/* timeline: past radar images, then whole forecast hours */
+function wxBuildStops(){
+  const now = Date.now()/1000, keep = WX.stops[WX.idx], wasNow = WX.idx === WX.nowIdx;
+  const past = S.wxRadar ? WX.frames.map(f => ({ kind:"radar", t:f.time, f })) : [];
+  if (!past.length) past.push({ kind:"now", t:now });
+  const base = Math.floor(now/3600)*3600, fc = [];
+  for (let h = 1; h <= WX_HOURS; h++) fc.push({ kind:"fc", t:base + h*3600 });
+  WX.stops = past.concat(fc); WX.nowIdx = past.length - 1;
+  WX.idx = !keep || wasNow ? WX.nowIdx : wxNear(WX.stops.map(s => s.t), keep.t);
+  $("wxTime").max = WX.stops.length - 1; $("wxTime").value = WX.idx;
+  const back = Math.round((now - WX.stops[0].t)/60);
+  $("wxTicks").innerHTML = "<span>" + (back >= 60 ? "−" + Math.round(back/60) + " h" : back > 1 ? "−" + back + " min" : "Now") + "</span><span>+" + WX_HOURS + " h</span>";
+}
+function wxLabel(){
+  const st = WX.stops[WX.idx]; if (!st) return;
+  const now = Date.now()/1000;
+  if (st.kind === "fc"){
+    $("wxWhen").textContent = wxDay(st.t) + " " + wxTime(st.t);
+    $("wxWhenNote").textContent = "Forecast, +" + Math.round((st.t - now)/3600) + " h" + (S.wxRadar ? ". Radar has no forecast" : "");
+  } else if (st.kind === "radar"){
+    const m = Math.max(0, Math.round((now - st.t)/60));
+    $("wxWhen").textContent = wxTime(st.t);
+    $("wxWhenNote").textContent = WX.idx === WX.nowIdx ? "Latest radar, " + m + " min old" : "Radar, " + m + " min ago";
+  } else { $("wxWhen").textContent = wxTime(st.t); $("wxWhenNote").textContent = "Now"; }
+  wxBadge();
+}
+function wxBadge(){
+  const st = WX.stops[WX.idx], b = $("wxBtn").querySelector(".wxbadge");
+  let t = "";
+  if (wxOn() && st) t = st.kind === "fc" ? "+" + Math.round((st.t - Date.now()/1000)/3600) + "h" : WX.idx === WX.nowIdx ? "now" : "−" + Math.round((Date.now()/1000 - st.t)/60) + "m";
+  b.textContent = t; $("wxBtn").classList.toggle("wxon", wxOn());
+}
+function wxSetIdx(i){ WX.idx = Math.max(0, Math.min(WX.stops.length - 1, i)); $("wxTime").value = WX.idx; wxRender(); }
+function wxRender(){ wxLabel(); wxShowRadar(); wxRenderWind(); wxMarkRow(); }
+
+/* radar */
+function wxRadarLayer(f){
+  let l = WX.layers[f.path];
+  if (!l){ l = L.tileLayer(WX.host + f.path + "/256/{z}/{x}/{y}/2/1_1.png", { pane:"wxRadar", opacity:0, maxNativeZoom:7, maxZoom:19, attribution:WX_ATTR_RV }); WX.layers[f.path] = l; }
+  return l;
+}
+function wxShowRadar(){
+  const st = WX.stops[WX.idx];
+  const want = S.wxRadar && st && st.kind === "radar" ? wxRadarLayer(st.f) : null;
+  if (want === WX.shown) return;
+  const prev = WX.shown; WX.shown = want;
+  if (want){ if (!map.hasLayer(want)) want.addTo(map); want.setOpacity(.6); }
+  if (prev) setTimeout(() => { if (prev !== WX.shown) map.removeLayer(prev); }, want ? 250 : 0);
+}
+async function wxLoadRadar(){
+  if (!S.wxRadar){ wxBuildStops(); wxRender(); return; }
+  try {
+    const j = await wxJSON(WX_RV);
+    WX.host = j.host || "https://tilecache.rainviewer.com";
+    WX.frames = (j.radar && j.radar.past) || [];
+    const keep = {}; WX.frames.forEach(f => keep[f.path] = 1);
+    Object.keys(WX.layers).forEach(p => { if (keep[p]) return; if (WX.layers[p] === WX.shown) WX.shown = null; map.removeLayer(WX.layers[p]); delete WX.layers[p]; });
+    if (/radar/i.test($("wxMsg").textContent)) wxMsg("");
+  } catch(e){ WX.frames = []; wxMsg("Rain radar is not available right now. Try again later."); }
+  wxBuildStops(); wxRender();
+}
+
+/* wind arrows: a forecast grid over the visible map */
+function wxGridPoints(){
+  const sz = map.getSize();
+  let cols = Math.max(3, Math.round(sz.x/110)), rows = Math.max(3, Math.round(sz.y/110));
+  while (cols*rows > 80){ cols--; rows--; }
+  const pts = [];
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++){
+    const ll = map.containerPointToLatLng([(c + .5)/cols*sz.x, (r + .5)/rows*sz.y]).wrap();
+    if (Math.abs(ll.lat) < 85) pts.push({ lat: Math.round(ll.lat*100)/100, lng: Math.round(ll.lng*100)/100 });
+  }
+  return pts;
+}
+async function wxLoadGrid(){
+  if (!S.wxWind) return;
+  const pts = wxGridPoints(), key = pts.map(p => p.lat + "," + p.lng).join(";");
+  if (key === WX.gridKey && WX.grid){ wxRenderWind(); return; }
+  if (WX.gridAbort) WX.gridAbort.abort();
+  const ac = new AbortController(); WX.gridAbort = ac;
+  const url = WX_OM + "?latitude=" + pts.map(p => p.lat).join(",") + "&longitude=" + pts.map(p => p.lng).join(",") +
+    "&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=ms&timeformat=unixtime&timezone=GMT&past_hours=3&forecast_hours=" + (WX_HOURS + 2);
+  try {
+    let j = await wxJSON(url, ac.signal);
+    if (!Array.isArray(j)) j = [j];
+    WX.grid = j.map((d, i) => ({ lat:pts[i].lat, lng:pts[i].lng, h:d.hourly }));
+    WX.gridKey = key;
+    if (/wind/i.test($("wxMsg").textContent)) wxMsg("");
+    wxRenderWind();
+  } catch(e){ if (e.name !== "AbortError") wxMsg("Wind forecast is not available right now. Try again later."); }
+}
+function wxArrow(v, d, g){
+  const c = wxCol(v), len = Math.min(14, 7 + v*.6), rot = norm360(d + 180); // wind blows from d, the arrow points where it goes
+  return '<svg width="44" height="44" viewBox="-22 -22 44 44"><g transform="rotate(' + rot.toFixed(0) + ')">' +
+    '<path d="M0 ' + len + 'V' + (5 - len) + '" stroke="#fff" stroke-width="5" stroke-linecap="round"/>' +
+    '<path d="M0 ' + len + 'V' + (5 - len) + '" stroke="' + c + '" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<path d="M-5.5 ' + (6 - len) + 'L0 ' + (-len - 2) + 'L5.5 ' + (6 - len) + 'Z" fill="' + c + '" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/>' +
+    '</g></svg><span style="color:' + c + '">' + wxSpd(v) + '<small>' + wxSpd(g) + '</small></span>';
+}
+function wxRenderWind(){
+  wxWindLayer.clearLayers();
+  const st = WX.stops[WX.idx];
+  if (!S.wxWind || !WX.grid || !st) return;
+  WX.grid.forEach(p => {
+    const h = p.h; if (!h || !h.time) return;
+    const i = wxNear(h.time, st.t), v = h.wind_speed_10m[i], d = h.wind_direction_10m[i];
+    if (wxNil(v) || wxNil(d)) return;
+    L.marker([p.lat, p.lng], { pane:"wxWind", interactive:false, keyboard:false,
+      icon: L.divIcon({ className:"wxa", iconSize:[44,44], iconAnchor:[22,22], html: wxArrow(v, d, h.wind_gusts_10m[i]) }) }).addTo(wxWindLayer);
+  });
+}
+function wxMove(){ clearTimeout(WX.gridT); WX.gridT = setTimeout(wxLoadGrid, 500); }
+
+/* forecast at a point */
+function wxArm(on){
+  WX.arming = !!on;
+  $("wxHere").setAttribute("aria-pressed", WX.arming ? "true" : "false");
+  map.getContainer().classList.toggle("wx-arming", WX.arming);
+  if (WX.arming){
+    setTool("pan"); map.closePopup();
+    if (isMobile()) wxPanel(false);
+    toast("Tap the map to get the forecast there.", "Cancel", () => wxArm(false));
+  } else $("toast").classList.remove("on");
+}
+map.on("click", e => { if (!WX.arming) return; wxArm(false); wxOpenPoint(e.latlng); });
+async function wxOpenPoint(ll){
+  const lat = Math.round(ll.lat*1e4)/1e4, lng = Math.round(ll.lng*1e4)/1e4;
+  // keep the box clear of the map controls on the right
+  const w = Math.min(560, map.getSize().x - (isMobile() ? 96 : 140));
+  const pop = L.popup({ maxWidth:w, minWidth:Math.min(260, w), className:"wxpop", autoPanPaddingTopLeft:[16, 70], autoPanPaddingBottomRight:[70, 90] })
+    .setLatLng(ll).setContent('<div class="pop wxp"><p class="small" style="margin:0">Loading the forecast…</p></div>').openOn(map);
+  const url = WX_OM + "?latitude=" + lat + "&longitude=" + lng +
+    "&current=temperature_2m,weather_code,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m" +
+    "&hourly=temperature_2m,weather_code,precipitation,precipitation_probability,cloud_cover,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,wind_speed_120m,wind_direction_120m" +
+    "&wind_speed_unit=ms&timeformat=unixtime&timezone=GMT&forecast_hours=" + WX_HOURS;
+  try {
+    const d = await wxJSON(url);
+    WX.point = { ll, d, pop };
+    if (!map.hasLayer(pop)) return;
+    pop.setContent(wxPointHTML(ll, d)); wxWirePopup(pop); wxMarkRow();
+    if (pop._adjustPan) pop._adjustPan(); // the full box is bigger than the loading text, so pan again
+  } catch(e){
+    if (map.hasLayer(pop)) pop.setContent('<div class="pop wxp"><p class="small" style="margin:0">The forecast is not available right now. Try again in a moment.</p></div>');
+  }
+}
+function wxPointHTML(ll, d){
+  const c = d.current || {}, h = d.hourly || {};
+  let rows = "", lastDay = "";
+  (h.time || []).forEach((t, i) => {
+    const dk = new Date(t*1000).toDateString(), nd = dk !== lastDay; lastDay = dk;
+    const wd = h.wind_direction_10m[i], wd2 = h.wind_direction_120m[i], pp = h.precipitation_probability[i], vis = h.visibility[i];
+    rows += '<tr data-t="' + t + '"' + (nd && i ? ' class="day"' : '') + '>' +
+      '<td>' + (nd ? wxDay(t) + " " : "") + wxTime(t) + '</td>' +
+      '<td class="wx">' + esc(WX_CODE[h.weather_code[i]] || "–") + '</td>' +
+      '<td>' + wxR0(h.temperature_2m[i]) + '</td>' +
+      '<td>' + (wxNil(wd) ? "" : '<i style="transform:rotate(' + norm360(wd + 180).toFixed(0) + 'deg)">↑</i>') + wxSpd(h.wind_speed_10m[i]) + (wxNil(wd) ? "" : " " + wxCompass(wd)) + '</td>' +
+      '<td>' + wxSpd(h.wind_gusts_10m[i]) + '</td>' +
+      '<td>' + (wxNil(wd2) ? "" : '<i style="transform:rotate(' + norm360(wd2 + 180).toFixed(0) + 'deg)">↑</i>') + wxSpd(h.wind_speed_120m[i]) + '</td>' +
+      '<td>' + wxR1(h.precipitation[i]) + (wxNil(pp) ? "" : ' <span class="pp">' + pp + '%</span>') + '</td>' +
+      '<td>' + wxR0(h.cloud_cover[i]) + '</td>' +
+      '<td>' + (wxNil(vis) ? "–" : vis >= 20000 ? "20+" : wxR0(vis/1000)) + '</td></tr>';
+  });
+  return '<div class="pop wxp">' +
+    '<div class="wxp-h"><b>Weather here</b><span>' + esc(mgrs(ll)) + '</span></div>' +
+    '<div class="wxp-now"><div class="wxp-t">' + wxR0(c.temperature_2m) + '°</div><div><b>' + esc(WX_CODE[c.weather_code] || "–") + '</b><br>' +
+    'Wind ' + wxSpd1(c.wind_speed_10m) + ' ' + wxUnit() + (wxNil(c.wind_direction_10m) ? "" : ' from ' + esc(fmtAng(c.wind_direction_10m, ll))) + ', gusts ' + wxSpd1(c.wind_gusts_10m) + '<br>' +
+    'Cloud ' + wxR0(c.cloud_cover) + ' %, rain ' + wxR1(c.precipitation) + ' mm</div></div>' +
+    '<p class="small">Model values for now' + (c.time ? ", " + wxTime(c.time) : "") + '. Tap an hour to show it on the map.</p>' +
+    '<div class="wxp-tbl"><table><thead><tr><th>Time</th><th>Weather</th><th>°C</th><th>Wind ' + wxUnit() + '</th><th>Gust</th><th>120 m</th><th>Rain mm</th><th>Cloud %</th><th>Vis km</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+    '<p class="small">Open-Meteo model forecast, not official aviation weather. Check METAR/TAF and NOTAMs before flying.</p></div>';
+}
+function wxWirePopup(pop){
+  const root = pop.getElement(); if (!root) return;
+  L.DomEvent.disableScrollPropagation(root.querySelector(".wxp-tbl"));
+  root.querySelectorAll("tr[data-t]").forEach(tr => tr.addEventListener("click", () => {
+    if (!wxOn()){ S.wxWind = true; save(); wxSync(); wxStart(); }
+    wxSetIdx(wxNear(WX.stops.map(s => s.t), +tr.dataset.t));
+  }));
+}
+function wxMarkRow(){
+  if (!WX.point || !map.hasLayer(WX.point.pop)) return;
+  const root = WX.point.pop.getElement(), st = WX.stops[WX.idx]; if (!root || !st) return;
+  const rows = [...root.querySelectorAll("tr[data-t]")]; if (!rows.length) return;
+  rows.forEach(r => r.classList.remove("sel"));
+  const times = rows.map(r => +r.dataset.t);
+  if (st.t >= times[0] - 1800) rows[wxNear(times, st.t)].classList.add("sel");
+}
+
+/* panel, switches and refresh */
+function wxPanel(open){
+  $("wxPanel").hidden = !open; $("wxBtn").setAttribute("aria-expanded", open ? "true" : "false");
+  if (open){ $("mapMenu").hidden = true; $("mapMenuBtn").setAttribute("aria-expanded", "false"); if (isMobile()) setSheet(false); }
+}
+function wxSync(){
+  $("wxRadar").checked = S.wxRadar; $("wxWind").checked = S.wxWind; $("wxUnit").value = S.wxU;
+  $("wxLegend").innerHTML = '<span>Wind ' + wxUnit() + '</span>' + WX_STEPS.map((s, i) => {
+    const lo = i ? WX_STEPS[i-1][0] : 0, f = v => wxKt() ? Math.round(v*1.943844) : v;
+    return '<span><i style="background:' + s[1] + '"></i>' + (i === 0 ? "<" + f(s[0]) : s[0] === Infinity ? f(lo) + "+" : f(lo) + "–" + f(s[0])) + '</span>';
+  }).join("");
+  const a = map.attributionControl;
+  if (a){ a.removeAttribution(WX_ATTR_OM); if (S.wxWind) a.addAttribution(WX_ATTR_OM); }
+  if (S.wxWind) wxWindLayer.addTo(map); else map.removeLayer(wxWindLayer);
+}
+function wxStart(){
+  if (!wxOn()){ wxStopPlay(); wxBuildStops(); wxRender(); return; }
+  wxLoadRadar(); wxLoadGrid();
+}
+function wxStopPlay(){ if (!WX.play) return; clearInterval(WX.play); WX.play = null; $("wxPlay").textContent = "▶"; $("wxPlay").setAttribute("aria-label", "Play"); }
+$("wxBtn").innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17h10a4 4 0 0 0 .6-7.96A5.5 5.5 0 0 0 7.1 8.6 4.2 4.2 0 0 0 7 17Z"/><path d="M9 20l-.6 1.2M13 20l-.6 1.2M17 20l-.6 1.2"/></svg><span class="wxbadge"></span>';
+$("wxBtn").onclick = () => {
+  const open = $("wxPanel").hidden;
+  if (open && !wxOn() && !S.wxSeen){ S.wxSeen = true; S.wxRadar = true; S.wxWind = true; save(); wxSync(); wxStart(); }
+  wxPanel(open);
+};
+$("mapMenuBtn").addEventListener("click", () => wxPanel(false));
+document.addEventListener("click", e => {
+  if (!isMobile() || $("wxPanel").hidden || $("wxPanel").contains(e.target) || $("wxBtn").contains(e.target)) return;
+  wxPanel(false);
+});
+$("wxRadar").addEventListener("change", e => { S.wxRadar = e.target.checked; save(); wxSync(); wxStart(); });
+$("wxWind").addEventListener("change", e => { S.wxWind = e.target.checked; save(); wxSync(); wxStart(); });
+$("wxUnit").addEventListener("change", e => {
+  S.wxU = e.target.value; save(); wxSync(); wxRenderWind();
+  if (WX.point && map.hasLayer(WX.point.pop)){ WX.point.pop.setContent(wxPointHTML(WX.point.ll, WX.point.d)); wxWirePopup(WX.point.pop); wxMarkRow(); }
+});
+$("wxHere").onclick = () => wxArm(!WX.arming);
+$("wxTime").addEventListener("input", () => { wxStopPlay(); wxSetIdx(+$("wxTime").value); });
+$("wxNow").onclick = () => { wxStopPlay(); wxSetIdx(WX.nowIdx); };
+$("wxPlay").onclick = () => {
+  if (WX.play){ wxStopPlay(); return; }
+  if (WX.idx >= WX.stops.length - 1) wxSetIdx(0);
+  WX.play = setInterval(() => { if (WX.idx >= WX.stops.length - 1) wxStopPlay(); else wxSetIdx(WX.idx + 1); }, 600);
+  $("wxPlay").textContent = "❚❚"; $("wxPlay").setAttribute("aria-label", "Pause");
+};
+map.on("moveend", wxMove);
+// every 5 minutes: new radar images; every 30 minutes: a fresh wind forecast
+setInterval(() => {
+  if (!wxOn()) return;
+  WX.tick++;
+  if (WX.tick % 6 === 0) WX.gridKey = "";
+  wxLoadRadar(); wxLoadGrid();
+}, 5*60*1000);
+// Escape: cancel picking a point first, then close the panel. Returns true when it used the key.
+function wxEsc(){
+  if (WX.arming){ wxArm(false); return true; }
+  if (!$("wxPanel").hidden){ wxPanel(false); return true; }
+  return false;
+}
+wxSync(); wxBuildStops(); wxRender(); if (wxOn()) wxStart();
 
 /* ================= start ================= */
 renderBgDownloads();

@@ -192,6 +192,7 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
       <li><a href="#editing">Editing and moving</a></li>
       <li><a href="#layers">Layers and selecting</a></li>
       <li><a href="#areas">Airspace areas</a></li>
+      <li><a href="#weather">Weather</a></li>
       <li><a href="#sharing">Sharing and files</a></li>
       <li><a href="#phone">Using a phone</a></li>
       <li><a href="#settings">Settings</a></li>
@@ -529,6 +530,21 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
       <div class="note warn"><p>The area data is unofficial and not for navigation. Always check the current AIP, NOTAMs, Flyk.com and Traficom publications.</p></div>
     </section>
 
+    <section id="weather">
+      <h2>Weather</h2>
+      <p class="intro">The cloud button in the map controls opens the weather panel: rain radar for now and the last two hours, a wind forecast over the map for the next 48 hours, and an hourly forecast for any spot you pick.</p>
+      <h3>On the map</h3>
+      <ul>
+        <li><b>Rain radar</b> shows where it rains or snows. It comes from RainViewer and covers about the last two hours. It has no forecast, and the free radar is coarse, so it looks blocky when you zoom far in.</li>
+        <li><b>Wind forecast arrows</b> point where the wind blows to. The big number is the wind and the small one the gusts, both at 10 m. The colour shows the strength (legend in the panel), and you can choose m/s or knots.</li>
+        <li>The <b>time slider</b> runs from the oldest radar image on the left, through now, to 48 hours ahead. Past positions show radar, future ones show the forecast. The play button steps through it, and <b>Now</b> jumps back. While weather is on, the cloud button shows the time you are looking at, such as <i>now</i> or <i>+6h</i>.</li>
+      </ul>
+      <h3>Forecast at a point</h3>
+      <p>Tap <b>Forecast at a point</b>, then tap the map. A box shows the conditions now and an hour-by-hour table for 48 hours: weather, temperature, wind and gusts, wind at 120 m, rain and its probability, cloud cover and visibility. The coordinate and the wind direction follow your settings (coordinate format, direction unit, true or grid north). Tap a row to show that hour on the map. Press Esc, or Cancel in the message, to stop picking.</p>
+      <p>The weather switches are remembered. The first time you open the panel, radar and wind are switched on for you.</p>
+      <div class="note warn"><p><b>Not official aviation weather.</b> The forecasts are model data from Open-Meteo and the radar is from RainViewer. Use them for planning only, and check METAR/TAF, NOTAMs and official weather services before flying. Positions you look up are sent to those services.</p></div>
+    </section>
+
     <section id="sharing">
       <h2>Sharing and files</h2>
       <p class="intro">Share a layer, a selection or everything as a link. The items travel inside the link itself, so nothing is uploaded anywhere.</p>
@@ -610,6 +626,7 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
       <p class="intro">The version you have is shown at the bottom of the Settings tab. Numbers go major.minor.patch: the middle number grows with new features, the last one with fixes only.</p>
       <p>If your phone shows an older number than the newest one here, reload the page. Browsers sometimes keep an old copy for a while.</p>
       <ol class="versions">
+        <li><div class="vh2"><b>2.18.0</b><span>19 Nov 2026</span></div><ul><li>Weather: rain radar (now and the last 2 h) and wind forecast arrows (next 48 h) on the map, with a time slider, and an hourly forecast for any spot you tap. Wind in m/s or knots.</li></ul></li>
         <li><div class="vh2"><b>2.17.0</b><span>19 Nov 2026</span></div><ul><li>Background data downloads in Settings: R areas, D areas, UAS zones, aerial photography restriction areas, or everything in one file, as GeoJSON, KML or KMZ.</li></ul></li>
         <li><div class="vh2"><b>2.16.0</b><span>19 Nov 2026</span></div><ul><li>The coordinate format can be changed at any time: from the button on the coordinate readout, under the coordinates in every details box, and in the coordinate panel, as well as in Settings and in an area's details.</li></ul></li>
         <li><div class="vh2"><b>2.15.0</b><span>19 Nov 2026</span></div><ul><li>Choose the coordinate system: MGRS, UTM, ETRS-TM35FIN, decimal degrees, degrees and decimal minutes, or degrees, minutes and seconds. It applies to the readout, details, area corner lists and copying, and can also be switched in an area's details.</li><li>UTM and ETRS-TM35FIN coordinates can be typed, pasted and searched.</li></ul></li>
@@ -636,7 +653,7 @@ dialog.lb button{position:fixed;top:12px;right:12px;width:44px;height:44px;borde
   </main>
 </div>
 
-<footer><div class="in"><span>Guide for version 2.17.0. <a href="../">Oscar Nissin</a>. Symbols drawn with milsymbol (MIT). Maps © OpenStreetMap contributors, OpenTopoMap, Esri.</span><a href="./">Open the map tool</a></div></footer>
+<footer><div class="in"><span>Guide for version 2.18.0. <a href="../">Oscar Nissin</a>. Symbols drawn with milsymbol (MIT). Maps © OpenStreetMap contributors, OpenTopoMap, Esri.</span><a href="./">Open the map tool</a></div></footer>
 
 <dialog class="lb" id="lb" aria-label="Enlarged picture"><button type="button" id="lbClose" aria-label="Close">×</button><img id="lbImg" alt=""></dialog>
 <script>
